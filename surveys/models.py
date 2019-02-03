@@ -56,9 +56,10 @@ class Contact(models.Model):
         return '{0} {1}'.format(self.first_name, self.last_name)
 
 class Survey(models.Model):
-    title = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, blank=True, null=True)
+    respondents = models.ManyToManyField(Contact, blank=True)
 
     @property
     def responses(self):
@@ -69,27 +70,27 @@ class Survey(models.Model):
         return Question.objects.filter(survey__id=self.id
                                        ).order_by('id').first()
     def __str__(self):
-        return '%s' % self.title
+        return '%s' % self.name
 
 class Question(models.Model):
     TEXT = 'text'
     YES_NO = 'yes-no'
     NUMERIC = 'numeric'
 
-    QUESTION_TYPE_CHOICES = (
+    QUESTION_KIND_CHOICES = (
         (TEXT, 'Text'),
         (YES_NO, 'Yes or no'),
         (NUMERIC, 'Numeric')
     )
 
     body = models.CharField(max_length=255)
-    _type = models.CharField(max_length=255, choices=QUESTION_TYPE_CHOICES, default=YES_NO)
+    kind = models.CharField(max_length=255, choices=QUESTION_KIND_CHOICES, default=YES_NO)
     sound = models.CharField(max_length=255, blank=True)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
 
     @classmethod
-    def validate_type(cls, kind):
-        if _type not in [cls.YES_NO, cls.NUMERIC, cls.TEXT]:
+    def validate_kind(cls, kind):
+        if kind not in [cls.YES_NO, cls.NUMERIC, cls.TEXT]:
             raise ValidationError("Invalid question type")
 
     def next(self):
@@ -118,7 +119,7 @@ class QuestionResponse(models.Model):
     def as_dict(self):
         return {
                 'body': self.question.body,
-                '_type': self.question._type,
+                'kind': self.question.kind,
                 'response': self.response,
                 'call_sid': self.call_sid,
                 'phone_number': self.phone_number,

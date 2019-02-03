@@ -22,6 +22,7 @@ from .local_settings import AWS_S3_CUSTOM_DOMAIN, AWS_S3_OBJECT_PARAMETERS, AWS_
 from .local_settings import AWS_PUBLIC_MEDIA_LOCATION, AWS_DEFAULT_ACL, DEFAULT_FILE_STORAGE
 from .local_settings import AWS_PRIVATE_MEDIA_LOCATION, PRIVATE_FILE_STORAGE
 from .local_settings import STATICFILES_DIRS, STATIC_URL, STATICFILES_STORAGE
+from .local_settings import TWILIO_AUTH_TOKEN, TWILIO_ACCOUNT_SID
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'surveys',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -108,3 +110,5 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

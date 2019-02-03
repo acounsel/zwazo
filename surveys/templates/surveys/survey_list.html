@@ -1,0 +1,24 @@
+{% extends 'surveys/base.html' %}
+
+{% block content %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Survey</th>
+      <th>Project</th>
+      <th>Contacts</th>
+      <th>Responses</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for survey in survey_list %}
+    <tr>
+      <td><a href="{% url 'survey-detail' pk=survey.id %}">{{ survey.name }}</a></td>
+      <td>{{ survey.project }}</td>
+      <td><a href="{% url 'contact-list' %}?survey={{ survey.id }}">{{ survey.respondents.count }}</td>
+      <td><a href="">?</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

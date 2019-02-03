@@ -1,0 +1,24 @@
+{% extends 'surveys/base.html' %}
+
+{% block content %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th>Country</th>
+      <th>Surveys</th>
+      <th>Contacts</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for project in project_list %}
+    <tr>
+      <td>{{ project.name }}</td>
+      <td>{{ project.country }}</td>
+      <td><a href="{% url 'survey-list' %}?project={{ project.id }}">{{ project.survey_set.count }}</a></td>
+      <td><a href="{% url 'contact-list' %}?project={{ project.id }}">{{ project.contact_set.count }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

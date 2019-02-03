@@ -1,0 +1,34 @@
+{% extends 'surveys/base.html' %}
+
+{% block content %}
+  <p class="h2 mb-5">{{ survey.name }}</p>
+  <div class="d-flex justify-content-between">
+    <div>
+      <p>Add Question</p>
+      {% include 'addins/form.html' %}
+    </div>
+    <div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Survey</th>
+            <th>Question</th>
+            <th>Kind</th>
+            <th>Sound</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for question in survey.question_set.all %}
+          <tr>
+            <td>{{ question.survey }}</td>
+            <td>{{ question.body }}</td> 
+            <td>{{ question.get_kind_display }}</td>
+            <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+{% endblock %}

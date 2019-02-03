@@ -8,15 +8,25 @@ urlpatterns = [
     path('surveys/', include([
         path('', views.SurveyList.as_view(), name='survey-list'),
         path('add/', views.SurveyCreate.as_view(), name='survey-create'),
-        path('<int:pk>', include([
+        path('<int:pk>/', include([
             path('', views.SurveyDetail.as_view(), name='survey-detail'),
-            path('update/', views.ContactUpdate.as_view(), name='contact-update'),
+            path('run/', views.run_survey, name='run-survey'),
+            path('update/', views.SurveyUpdate.as_view(), name='survey-update'),
+            path('questions/', include([
+                path('', views.QuestionList.as_view(), name='question-list'),
+                path('add/', views.QuestionCreate.as_view(), name='question-create'),
+                path('<int:question_pk>/', include([
+                    path('', views.QuestionDetail.as_view(), name='question-detail'),
+                    path('run/', views.run_question, name='run-question'),
+                    path('update/', views.QuestionUpdate.as_view(), name='question-update'),
+                ])),
+            ])),
         ])),
     ])),
     path('contacts/', include([
         path('', views.ContactList.as_view(), name='contact-list'),
         path('add/', views.ContactCreate.as_view(), name='contact-create'),
-        path('<int:pk>', include([
+        path('<int:pk>/', include([
             path('', views.ContactDetail.as_view(), name='contact-detail'),
             path('update/', views.ContactUpdate.as_view(), name='contact-update'),
         ])),
@@ -24,7 +34,7 @@ urlpatterns = [
     path('projects/', include([
         path('', views.ProjectList.as_view(), name='project-list'),
         path('add/', views.ProjectCreate.as_view(), name='project-create'),
-        path('<slug>', include([
+        path('<slug>/', include([
             path('', views.ProjectDetail.as_view(), name='project-detail'),
             path('update/', views.ProjectUpdate.as_view(), name='project-update'),
         ])),

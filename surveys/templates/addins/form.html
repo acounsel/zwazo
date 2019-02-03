@@ -1,12 +1,8 @@
-<form>
+{% load crispy_forms_tags %}
+<form method="POST" action="{{ form_action }}" novalidate>
+  {% csrf_token %}
   {% for field in form %}
-  <div>
-    <label>{{ field.label }}</label>
-    {{ field }}
-    {% if field.errors %}
-    <div class="error">{{ field.errors }}</div>
-    {% endif %}
-  </div>
+    {{ field|as_crispy_field }}
   {% endfor %}
   <input class="btn btn-primary" type="submit" value="Submit">
 </form>
