@@ -1,0 +1,12 @@
+<form>
+  {% for field in form %}
+  <div>
+    <label>{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}
+    <div class="error">{{ field.errors }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  <input class="btn btn-primary" type="submit" value="Submit">
+</form>
