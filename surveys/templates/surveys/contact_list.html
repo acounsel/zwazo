@@ -1,13 +1,13 @@
-{% extends 'surveys/base.html' %}
-
-{% block content %}
-<table class="table">
+{% extends 'surveys/base_contact.html' %}
+{% block tab_list %}active{% endblock %}
+{% block contact_card %}
+<table class="table table-hover table-bordered">
   <thead>
     <tr>
-      <th>First Name</th>
-      <th>Last Name</th>
-      <th>Phone</th>
-      <th>Email</th>
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Phone</th>
+      <th scope="col">Email</th>
     </tr>
   </thead>
   <tbody>

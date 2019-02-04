@@ -5,7 +5,7 @@
 <div class="d-flex justify-content-between">
   <div>
     <p>Questions</p>
-    <a href="{% url 'question-create' %}?survey={{ survey.id }}">Add Question</a>
+    <a href="{% url 'question-create' pk=survey.id %}">Add Question</a>
     <table class="table">
       <thead>
         <tr>

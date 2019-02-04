@@ -1,0 +1,29 @@
+{% extends 'surveys/base.html' %}
+
+{% block content %}
+<div class="container">
+  <p class="h2 mb-5 text-white">{{ project.name }}</p>
+  <div class="card text-center">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link {% block tab_detail %}{% endblock %}" href="{% url 'contact-list' %}">Project Details</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% block tab_surveys %}{% endblock %}" href="{% url 'contact-list' %}">Surveys</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% block tab_contacts %}{% endblock %}" href="{% url 'contact-create' %}">Contacts</a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Project</h5>
+      <div class="text-left">
+      {% block project_card %}
+      {% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

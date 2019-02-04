@@ -220,10 +220,16 @@ class QuestionDetail(QuestionView, DetailView):
 
 class QuestionCreate(QuestionView, CreateView):
     
-    def get_context_data(self, *args, **kwargs):
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['survey'] = Survey.objects.get(id=self.kwargs['pk'])
         return context
+
+    def get_initial(self):
+        initial = super(QuestionCreate, self).get_initial()
+        # context = self.get_context_data(**kwargs)
+        initial['survey'] = Survey.objects.get(id=self.kwargs['pk'])
+        return initial.copy()
 
 class QuestionUpdate(QuestionView, UpdateView):
     pass
@@ -231,7 +237,6 @@ class QuestionUpdate(QuestionView, UpdateView):
 class ProjectView(View):
     model = Project
     fields = ('name', 'country', 'description')
-    success_url = reverse_lazy('project-list')
 
 class ProjectList(ProjectView, ListView):
     pass
@@ -257,7 +262,29 @@ class ContactDetail(ContactView, DetailView):
     pass
 
 class ContactCreate(ContactView, CreateView):
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.GET.get('project'):
+            context['project'] = Project.objects.get(id=self.request.GET.get('project'))
+        return context
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # context = self.get_context_data(**kwargs)
+        if self.request.GET.get('project'):
+            initial['project'] = Project.objects.get(id=self.request.GET.get('project'))
+        return initial.copy()
 
 class ContactUpdate(ContactView, UpdateView):
     pass
+
+class QuestionResponseView(View):
+    model = QuestionResponse
+
+class QuestionResponseList(QuestionResponseView, ListView):
+    pass
+
+class QuestionResponseDetail(QuestionResponseView, DetailView):
+    pass
+
+

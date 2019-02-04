@@ -1,18 +1,19 @@
 from django.db import models
 from django.db.models import Count
 from django.core.exceptions import ValidationError
+from django.urls import reverse
+from django.utils.text import slugify
 
-def create_unique_slug(model, instance):
+def create_unique_slug(instance):
     iterator = 1
-    slug = slugify(self.name)
-    while model.__class__.objects.exclude(id=self.id).filter(slug=slug):
+    slug = slugify(instance.name)
+    while instance.__class__.objects.exclude(id=instance.id).filter(slug=slug):
         iterator += 1
-        slug = slugify(self.name) + str(iterator)
+        slug = slugify(instance.name) + str(iterator)
     return slug
 
 class Language(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, blank=True)
 
     def __str__(self):
         return self.name
@@ -32,8 +33,8 @@ class Country(models.Model):
         verbose_name_plural = 'countries'
 
     def save(self, *args, **kwargs):
-        self.slug = self.create_unique_slug()
-        super(SlugModel, self).save(*args, **kwargs)
+        self.slug = create_unique_slug(self)
+        super(Country, self).save(*args, **kwargs)
 
 class Project(models.Model):
     name = models.CharField(max_length=255)
@@ -43,6 +44,13 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.slug = create_unique_slug(self)
+        super(Project, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('project-detail', kwargs={'slug': self.slug})
 
 class Contact(models.Model):
     first_name = models.CharField(max_length=255, blank=True)
