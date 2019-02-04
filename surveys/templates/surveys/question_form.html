@@ -1,7 +1,7 @@
-{% extends 'surveys/base.html' %}
+{% extends 'surveys/base_surveys.html' %}
+{% block tab_list %}active{% endblock %}
 
-{% block content %}
-  <p class="h2 mb-5">{{ survey.name }}</p>
+{% block card %}
   <div class="d-flex justify-content-between">
     <div>
       <p>Add Question</p>
@@ -11,7 +11,6 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Survey</th>
             <th>Question</th>
             <th>Kind</th>
             <th>Sound</th>
@@ -20,7 +19,6 @@
         <tbody>
           {% for question in survey.question_set.all %}
           <tr>
-            <td>{{ question.survey }}</td>
             <td>{{ question.body }}</td> 
             <td>{{ question.get_kind_display }}</td>
             <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>

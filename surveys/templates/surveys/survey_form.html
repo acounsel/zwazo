@@ -1,5 +1,7 @@
-{% extends 'surveys/base.html' %}
+{% extends 'surveys/base_surveys.html' %}
+{% block tab_form %}active{% endblock %}
 
-{% block content %}
+
+{% block card %}
   {% include 'addins/form.html' %}
 {% endblock %}

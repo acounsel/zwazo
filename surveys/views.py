@@ -16,20 +16,36 @@ from .models import Language, Country, Project, Contact
 from .models import Survey, Question, QuestionResponse
 from .decorators import validate_twilio_request
 
-class SurveyList(ListView):
-    model = Survey
-
-class Home(SurveyList):
-    template_name = 'surveys/home.html'
-
 class SurveyView(View):
     model = Survey
     fields = ('name', 'language', 'project', 'respondents')
 
     def get_success_url(self, **kwargs):         
         return reverse_lazy('question-create', args = (self.object.id,))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.GET.get('project'):
+            context['project'] = Project.objects.get(id=self.request.GET.get('project'))
+        return context
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # context = self.get_context_data(**kwargs)
+        if self.request.GET.get('project'):
+            initial['project'] = Project.objects.get(id=self.request.GET.get('project'))
+        return initial.copy()
+
 class SurveyList(SurveyView, ListView):
-    pass
+
+    def get_queryset(self):
+        queryset = super(SurveyList, self).get_queryset()
+        if self.request.GET.get('project'):
+            queryset = queryset.filter(project=Project.objects.get(id=self.request.GET.get('project')))
+        return queryset
+
+class Home(SurveyList):
+    template_name = 'surveys/home.html'
 
 class SurveyDetail(SurveyView, DetailView):
 
@@ -51,7 +67,6 @@ class SurveyDetail(SurveyView, DetailView):
         )
 
     def voice_survey(self, request, contact, client):
-
         call = client.calls.create(
             to=contact,
             from_='+14152956702',
@@ -212,6 +227,14 @@ class QuestionView(View):
     def get_success_url(self, **kwargs):         
         return reverse_lazy('question-create', kwargs = {'pk': self.object.survey.id})
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['survey'] = Survey.objects.get(id=self.kwargs['pk'])
+        if getattr(context['survey'], 'project', None):
+            context['project'] = context['survey'].project
+        return context
+
+
 class QuestionList(QuestionView, ListView):
     pass
 
@@ -219,11 +242,6 @@ class QuestionDetail(QuestionView, DetailView):
     pass
 
 class QuestionCreate(QuestionView, CreateView):
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['survey'] = Survey.objects.get(id=self.kwargs['pk'])
-        return context
 
     def get_initial(self):
         initial = super(QuestionCreate, self).get_initial()
@@ -253,7 +271,15 @@ class ProjectUpdate(ProjectView, UpdateView):
 class ContactView(View):
     model = Contact
     fields = ('first_name', 'last_name', 'project', 'phone', 'email')
-    success_url = reverse_lazy('contact')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.GET.get('survey'):
+            context['survey'] = Survey.objects.get(id=self.request.GET.get('survey'))
+        if self.request.GET.get('project'):
+            context['project'] = Project.objects.get(id=self.request.GET.get('project'))
+        return context
+
 
 class ContactList(ContactView, ListView):
     pass
@@ -262,11 +288,6 @@ class ContactDetail(ContactView, DetailView):
     pass
 
 class ContactCreate(ContactView, CreateView):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.GET.get('project'):
-            context['project'] = Project.objects.get(id=self.request.GET.get('project'))
-        return context
 
     def get_initial(self):
         initial = super().get_initial()
@@ -274,6 +295,18 @@ class ContactCreate(ContactView, CreateView):
         if self.request.GET.get('project'):
             initial['project'] = Project.objects.get(id=self.request.GET.get('project'))
         return initial.copy()
+
+    def form_valid(self, form):
+        if form.instance.project:
+            self.add_project_contacts_to_surveys(form.instance.project)
+        return super().form_valid(form)
+
+    def add_project_contacts_to_surveys(self, project):
+        for survey in project.survey_set.all():
+            survey.respondents.add(*project.contact_set.all())
+            survey.save()
+        return True
+
 
 class ContactUpdate(ContactView, UpdateView):
     pass

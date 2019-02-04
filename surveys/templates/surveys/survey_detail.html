@@ -1,11 +1,11 @@
-{% extends 'surveys/base.html' %}
+{% extends 'surveys/base_surveys.html' %}
+{% block tab_list %}active{% endblock %}
 
-{% block content %}
-<p class="h2 mb-5">{{ survey.name }}</p>
+{% block card%}
 <div class="d-flex justify-content-between">
   <div>
     <p>Questions</p>
-    <a href="{% url 'question-create' pk=survey.id %}">Add Question</a>
+    <a href="{% url 'question-create' pk=survey.id %}?project={{  project.id }}">Add Question</a>
     <table class="table">
       <thead>
         <tr>
@@ -21,7 +21,7 @@
           <td>{{ question.body }}</td> 
           <td>{{ question.get_kind_display }}</td>
           <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>
-          <td>X</td>
+          <td>x</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -29,6 +29,7 @@
   </div>
   <div>
     <p>Sending To</p>
+    <a href="{% url 'contact-create' %}?project={{ survey.project.id }}">Add Contact</a>
     <table class="table">
       <thead>
         <tr>
@@ -44,7 +45,7 @@
           <td>{{ contact.first_name }}</td> 
           <td>{{ contact.last_name }}</td>
           <td>{{ contact.phone }}</td>
-          <td>X</td>
+          <td>x</td>
         </tr>
         {% endfor %}
       </tbody>

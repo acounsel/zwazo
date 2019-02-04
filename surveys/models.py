@@ -63,6 +63,9 @@ class Contact(models.Model):
     def __str__(self):
         return '{0} {1}'.format(self.first_name, self.last_name)
 
+    def get_absolute_url(self): 
+        return reverse('contact-list') + '?project={0}'.format(getattr(self.project, 'id', ''))
+
 class Survey(models.Model):
     name = models.CharField(max_length=255)
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
@@ -79,6 +82,9 @@ class Survey(models.Model):
                                        ).order_by('id').first()
     def __str__(self):
         return '%s' % self.name
+
+    def get_absolute_url(self):
+        return reverse('survey-detail', kwargs={'pk':self.id})
 
 class Question(models.Model):
     TEXT = 'text'

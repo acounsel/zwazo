@@ -1,6 +1,7 @@
-{% extends 'surveys/base.html' %}
+{% extends 'surveys/base_surveys.html' %}
+{% block tab_list %}active{% endblock %}
 
-{% block content %}
+{% block card %}
 <table class="table">
   <thead>
     <tr>
@@ -13,7 +14,7 @@
   <tbody>
     {% for survey in survey_list %}
     <tr>
-      <td><a href="{% url 'survey-detail' pk=survey.id %}">{{ survey.name }}</a></td>
+      <td><a href="{% url 'survey-detail' pk=survey.id %}{% if project %}?project={{ survey.project.id }}{% endif %}">{{ survey.name }}</a></td>
       <td>{{ survey.project }}</td>
       <td><a href="{% url 'contact-list' %}?survey={{ survey.id }}">{{ survey.respondents.count }}</td>
       <td><a href="">?</td>
