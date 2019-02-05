@@ -18,6 +18,8 @@ urlpatterns = [
                 path('<int:question_pk>/', include([
                     path('', views.QuestionDetail.as_view(), name='question-detail'),
                     path('run/', views.run_question, name='run-question'),
+                    path('save/', views.save_response, name='save_response'),
+                    path('next/', views.run_question, name='question'),
                     path('update/', views.QuestionUpdate.as_view(), name='question-update'),
                 ])),
             ])),

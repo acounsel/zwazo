@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
@@ -112,7 +113,7 @@ def run_survey(request, pk):
 
 @require_GET
 @validate_twilio_request
-def run_question(request, pk):
+def run_question(request, pk, question_pk):
     question = Question.objects.get(id=pk)
     twiml_response = VoiceResponse()
 
@@ -140,6 +141,12 @@ VOICE_INSTRUCTIONS = {
     Question.NUMERIC: 'Please press a number between 1 and 10 and then hit the pound sign'
 }
 
+def save_response_url(question):
+    return reverse('save_response',
+                   kwargs={'pk': question.survey.id,
+                           'question_pk': question.id})
+
+
 @require_POST
 @validate_twilio_request
 def redirects_twilio_request_to_proper_endpoint(request):
@@ -151,14 +158,15 @@ def redirects_twilio_request_to_proper_endpoint(request):
     else:
         question = Question.objects.get(id=answering_question)
         redirect_url = reverse('save_response',
-                               kwargs={'survey_id': question.survey.id,
-                                       'question_id': question.id})
+                               kwargs={'pk': question.survey.id,
+                                       'question_pk': question.id})
     return HttpResponseRedirect(redirect_url)
 
 @require_POST
+@csrf_exempt
 @validate_twilio_request
-def save_response(request, survey_id, question_id):
-    question = Question.objects.get(id=question_id)
+def save_response(request, pk, question_pk):
+    question = Question.objects.get(id=question_pk)
 
     save_response_from_request(request, question)
 
@@ -166,10 +174,10 @@ def save_response(request, survey_id, question_id):
     if not next_question:
         return goodbye(request)
     else:
-        return next_question_redirect(next_question.id, survey_id)
+        return next_question_redirect(next_question.id, pk)
 
-def next_question_redirect(question_id, survey_id):
-    parameters = {'survey_id': survey_id, 'question_id': question_id}
+def next_question_redirect(question_pk, pk):
+    parameters = {'pk': pk, 'question_pk': question_pk}
     question_url = reverse('question', kwargs=parameters)
 
     twiml_response = MessagingResponse()

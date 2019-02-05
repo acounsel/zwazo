@@ -18,6 +18,7 @@
 </head>
 {% block body %}
 <body class="Body">
+  {% include 'addins/messages.html' %}
   {% include 'addins/navbar.html' %}
   <div class="Main">
     <div class="Content-wrapper" style="opacity:0.9;">
@@ -31,6 +32,11 @@
   {% endblock %}
   {% block javascript %}
   {% endblock %}
+  <script type="text/javascript">
+  $('.Message').click(function() {
+    $('.Message').fadeOut("slow");
+  });
+  </script>
 </body>
 {% endblock %}
 </html>
