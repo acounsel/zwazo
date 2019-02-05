@@ -68,7 +68,7 @@ class SurveyDetail(SurveyView, DetailView):
 
     def voice_survey(self, request, contact, client, survey):
         call = client.calls.create(
-            to=contact,
+            to=contact.phone,
             from_='+14152956702',
             url=request.build_absolute_uri(
                 reverse('run-survey', kwargs={'pk':survey.id})
