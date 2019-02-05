@@ -56,7 +56,7 @@ class SurveyDetail(SurveyView, DetailView):
         print(self.object.respondents.all())
         for contact in self.object.respondents.all():
             print(contact)
-            self.voice_survey(request, contact, client)
+            self.voice_survey(request, contact, client, self.object)
         messages.success(request, 'Message successfuly sent')
         return self.render_to_response(context=context)
 
@@ -66,12 +66,12 @@ class SurveyDetail(SurveyView, DetailView):
             settings.TWILIO_AUTH_TOKEN
         )
 
-    def voice_survey(self, request, contact, client):
+    def voice_survey(self, request, contact, client, survey):
         call = client.calls.create(
             to=contact,
             from_='+14152956702',
             url=request.build_absolute_uri(
-                reverse('run-survey', kwargs={'pk':self.object.id})
+                reverse('run-survey', kwargs={'pk':survey.id})
             )
         )
         print(call)
