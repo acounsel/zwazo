@@ -91,7 +91,7 @@ class SurveyDetail(SurveyView, DetailView):
 
 @csrf_exempt
 @validate_twilio_request
-def run_survey(self, request, pk):
+def run_survey(request, pk):
     survey = Survey.objects.get(id=pk)
     first_question = survey.first_question
     first_question_id = {
@@ -106,6 +106,7 @@ def run_survey(self, request, pk):
     logger.error(twiml_response)
     twiml_response.redirect(first_question_url, method='GET')
     print('Response2: {}'.format(twiml_response))
+    messages.success(request, 'Survey Sent')
     return HttpResponse(twiml_response, content_type='application/xml')
 
 
