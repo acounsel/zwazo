@@ -1,5 +1,12 @@
 {% extends 'surveys/base_surveys.html' %}
 {% block tab_list %}active{% endblock %}
+{% if survey.responses %}
+{% block tab_responses %}
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'survey-response' pk=survey.id %}">Survey Results</a>
+  </li>
+{% endblock %}
+{% endif %}
 
 {% block card%}
 <div class="d-flex justify-content-between">

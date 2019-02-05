@@ -1,4 +1,4 @@
-{% extends 'surveys/base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container">
@@ -14,6 +14,7 @@
         <li class="nav-item">
           <a class="nav-link {% block tab_list %}{% endblock %}" href="{% url 'survey-list' %}{% if project %}?project={{ project.id }}{% endif %}">Surveys</a>
         </li>
+        {% block tab_responses %}{% endblock %}
         <li class="nav-item">
           <a class="nav-link {% block tab_form %}{% endblock %}" href="{% url 'survey-create' %}{% if project %}?project={{ project.id }}{% endif %}">Add Survey</a>
         </li>

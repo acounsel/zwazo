@@ -12,6 +12,7 @@ urlpatterns = [
             path('', views.SurveyDetail.as_view(), name='survey-detail'),
             path('run/', views.run_survey, name='run-survey'),
             path('update/', views.SurveyUpdate.as_view(), name='survey-update'),
+            path('responses/', views.SurveyResponse.as_view(), name='survey-response'),
             path('questions/', include([
                 path('', views.QuestionList.as_view(), name='question-list'),
                 path('add/', views.QuestionCreate.as_view(), name='question-create'),

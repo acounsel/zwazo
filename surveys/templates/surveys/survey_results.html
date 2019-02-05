@@ -1,0 +1,31 @@
+{% extends 'surveys/base_surveys.html' %}
+{% block tab_responses %}
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'survey-response' pk=survey.id %}">Survey Results</a>
+  </li>
+{% endblock %}
+
+{% block card%}
+  <table class="table w-100">
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>Kind</th>
+        <th>Response</th>
+        <th>Respondent</th>
+        <th>Number</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for response in survey.responses %}
+      <tr>
+        <td>{{ response.question.body }}</td>
+        <td>{{ response.question.get_kind_display }}</td>
+        <td>{% if response.question.kind == 'text' %}<a href="{{ response.response }}">Link</a>{% else %}{{ response.response }}{% endif %}</td>
+        <td>{{ response.call_sid }}</td>
+        <td>{{ response.phone_number }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

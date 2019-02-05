@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -21,7 +22,7 @@ from .decorators import validate_twilio_request
 
 logger = logging.getLogger(__name__)
 
-class SurveyView(View):
+class SurveyView(LoginRequiredMixin, View):
     model = Survey
     fields = ('name', 'language', 'project', 'respondents')
 
@@ -49,7 +50,8 @@ class SurveyList(SurveyView, ListView):
             queryset = queryset.filter(project=Project.objects.get(id=self.request.GET.get('project')))
         return queryset
 
-class Home(SurveyList):
+class Home(ListView):
+    model = Survey
     template_name = 'surveys/home.html'
 
 class SurveyDetail(SurveyView, DetailView):
@@ -236,7 +238,10 @@ class SurveyCreate(SurveyView, CreateView):
 class SurveyUpdate(SurveyView, UpdateView):
     pass
 
-class QuestionView(View):
+class SurveyResponse(SurveyView, DetailView):
+    template_name = 'surveys/survey_results.html'
+    
+class QuestionView(LoginRequiredMixin, View):
     model = Question
     fields = ('body', 'kind', 'sound', 'survey')
 
@@ -268,7 +273,7 @@ class QuestionCreate(QuestionView, CreateView):
 class QuestionUpdate(QuestionView, UpdateView):
     pass
 
-class ProjectView(View):
+class ProjectView(LoginRequiredMixin, View):
     model = Project
     fields = ('name', 'country', 'description')
 
@@ -284,7 +289,7 @@ class ProjectCreate(ProjectView, CreateView):
 class ProjectUpdate(ProjectView, UpdateView):
     pass
 
-class ContactView(View):
+class ContactView(LoginRequiredMixin, View):
     model = Contact
     fields = ('first_name', 'last_name', 'project', 'phone', 'email')
 
@@ -327,7 +332,7 @@ class ContactCreate(ContactView, CreateView):
 class ContactUpdate(ContactView, UpdateView):
     pass
 
-class QuestionResponseView(View):
+class QuestionResponseView(LoginRequiredMixin, View):
     model = QuestionResponse
 
 class QuestionResponseList(QuestionResponseView, ListView):

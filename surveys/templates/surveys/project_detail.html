@@ -3,4 +3,8 @@
 {% block project_card %}
   <p>{{ project.country }}</p>
   <p>{{ project.description }}</p>
+  <p>{{ project.survey_set.count }} Surveys Created</p>
+  <p>{{ project.get_sent_survey_count }} Surveys Sent</p>
+  <p>{{ project.contact_set.count }} Contacts</p>
+  <p>{{ project.get_respondent_count }} Respondents</p>
 {% endblock %}
