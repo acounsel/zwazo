@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.text import slugify
 
+from accounts.models import Organization
+
 def create_unique_slug(instance):
     iterator = 1
     slug = slugify(instance.name)
@@ -39,6 +41,7 @@ class Country(models.Model):
 class Project(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, blank=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True)
 
