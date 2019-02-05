@@ -91,7 +91,8 @@ def run_survey(self, request, pk):
     survey = Survey.objects.get(id=pk)
     first_question = survey.first_question
     first_question_id = {
-        'pk': first_question.id
+        'pk': survey.id,
+        'question_pk': first_question.id
     }
     first_question_url = reverse('run-question', kwargs=first_question_id)
     welcome = 'Hello and thank you for taking the %s survey' % survey.name
