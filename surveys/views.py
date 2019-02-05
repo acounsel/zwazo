@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -15,6 +17,8 @@ from twilio.twiml.voice_response import Gather, Dial, VoiceResponse, Say
 from .models import Language, Country, Project, Contact
 from .models import Survey, Question, QuestionResponse
 from .decorators import validate_twilio_request
+
+logger = logging.getLogger(__name__)
 
 class SurveyView(View):
     model = Survey
@@ -98,8 +102,10 @@ def run_survey(self, request, pk):
     welcome = 'Hello and thank you for taking the %s survey' % survey.name
     twiml_response = VoiceResponse()
     twiml_response.say(welcome)
+    print('Response1: {}'.format(twiml_response))
+    logger.error(twiml_response)
     twiml_response.redirect(first_question_url, method='GET')
-
+    print('Response2: {}'.format(twiml_response))
     return HttpResponse(twiml_response, content_type='application/xml')
 
 
