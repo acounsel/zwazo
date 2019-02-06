@@ -349,11 +349,9 @@ class ContactImport(ProjectDetail):
         context = self.get_context_data(**kwargs)
         try:
             import_file = request.FILES['csv_file']
-            print(import_file)
         except KeyError:
             messages.error(request, 'Please upload a file.')
         else: 
-            print('Uploading file...')
             self.import_csv_data(import_file)
         return redirect(reverse('contact-list') + '?project={}'.format(self.object.id))
 
@@ -368,17 +366,12 @@ class ContactImport(ProjectDetail):
                 'Failed to read file. Please make sure the file is in CSV format.')
         else:
             errors = self.enumerate_rows(reader)
-        print(errors)
-        if not errors:
-            print('Importing Data...')
         return errors
 
     # Loop through CSV, skipping header row.
     def enumerate_rows(self, reader, start=2):
-        print(reader.__dict__)
         # Index is for row numbers in error message-s.
         for index, contact in enumerate(reader, start=2):
-            print('Here we go!')
             row_errors = []
             try:
                 self.import_contact_row(contact)
@@ -387,7 +380,6 @@ class ContactImport(ProjectDetail):
         return row_errors
 
     def import_contact_row(self, contact_dict):
-        print(contact_dict)
         contact = Contact.objects.create(**contact_dict)
         return contact
 

@@ -7,14 +7,18 @@
   border-radius: 50%;
   padding: 0.2rem 0.35rem;
 }
-.nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link {
-  border-top: 5px solid #FF69B4;
-  border-top-left-radius: 0.3rem;
-  border-top-right-radius: 0.3rem;
+.card-header {
+  padding: 0.5rem 1.25rem 0.75rem;
 }
-.nav-link {
-  padding: 0.3rem 1rem 0.5rem;
-}
+  .nav-link {
+    color: #4D4D4D;
+    padding: 0.3rem 1rem 0.5rem;
+  }
+    .nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link {
+      border-top: 5px solid #FF69B4;
+      border-top-left-radius: 0.3rem;
+      border-top-right-radius: 0.3rem;
+    }
 .Messages {
     position: relative;
     width: 100%;

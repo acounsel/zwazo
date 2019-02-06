@@ -21,7 +21,7 @@
           <a class="nav-link {% block tab_list %}{% endblock %}" href="{% url 'contact-list' %}?{% if project %}project={{ project.id }}{% endif %}">Contacts</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {% block tab_form %}{% endblock %}" href="{% url 'contact-create' %}?project={{ project.id }}">Add Contact</a>
+          <a class="nav-link {% block tab_form %}{% endblock %}" href="{% if project %}{% url 'contact-add' slug=project.slug %}{% else %}{% url 'contact-create' %}{% endif %}">Add Contact</a>
         </li>
       </ul>
     </div>
