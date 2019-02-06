@@ -51,3 +51,18 @@
     background-color: #FF69B4;
     border-color: #FF69B4;
   }
+
+  .w-100-r {
+    width: 100% !important;
+  }
+  #id_map path {
+    transition: all 0.3s ease-in-out
+  }
+
+  #id_map path:hover { 
+    fill: #FF69B4; 
+    cursor: pointer;
+  }
+  #id_map rect:hover {
+    fill:transparent;
+  }

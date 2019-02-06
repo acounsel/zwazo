@@ -1,7 +1,54 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1 class="text-white mb-5">Communicate with communities around the world.</h1>
+<style xmlns="http://www.w3.org/2000/svg">
+  
+</style>
+<div class="w-75 mx-auto">
+  <h1 class="text-white pb-5">Communicate with communities around the world.</h1>
 <!--     <h2 class="text-white h4">Choose a country below to send voice or SMS messages or create surveys</h2> -->
+  <div id="id_map" class="my-5"></div>
     <a href="{% url 'project-create' %}"><button class="btn btn-lg text-white" style="background:#FF69B4;">Start Project</button></a>
+</div>
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js">
+  </script>
+  <script src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {
+      'packages':['geochart'],
+      'mapsApiKey': 'AIzaSyBACUY_CFamQlkSs_KuFK1BbhTbJ_43ty8'
+    });
+    google.charts.setOnLoadCallback(drawRegionsMap);
+
+    function drawRegionsMap() {
+      var data = google.visualization.arrayToDataTable([
+        ['Country', 'Popularity', 'Link'],
+        {% for country in country_list %}[{{ country.name }}, 100, {{ country.get_project_url }}],{% endfor %}
+      ]);
+
+      var view = new google.visualization.DataView(data);
+      view.setColumns([0, 1]);
+
+      var options = {
+        colorAxis: {colors: ['#FFFFFF',]},
+        backgroundColor: { fill:'transparent' },
+      };
+
+      var chart = new google.visualization.GeoChart(document.getElementById('id_map'));
+
+      google.visualization.events.addListener(chart, 'select', function () {
+        console.log('Hello??');
+        var selection = chart.getSelection();
+        if (selection.length > 0) {
+          console.log(data.getValue(selection[0].row, 2));
+          //window.open('http://' + data.getValue(selection[0].row, 2), '_blank');
+        }
+      });
+
+      chart.draw(view, options);
+    }
+  </script>
 {% endblock %}

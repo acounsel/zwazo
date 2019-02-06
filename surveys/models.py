@@ -1,3 +1,5 @@
+import csv
+
 from django.db import models
 from django.db.models import Count
 from django.core.exceptions import ValidationError
@@ -20,7 +22,19 @@ class Language(models.Model):
     def __str__(self):
         return self.name
 
+class CountryManager(models.Manager):
+
+    def import_countries(self):
+        with open('data/countries.csv', encoding="utf-8", errors='ignore') as csvfile:
+            reader = csv.DictReader(csvfile)
+            iterator = 0
+            for row in reader:
+                self.create(name=row['Name'], code=row['Code'])
+                iterator += 1
+        return iterator
+
 class Country(models.Model):
+    objects = CountryManager()
 
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, blank=True)
@@ -37,6 +51,9 @@ class Country(models.Model):
     def save(self, *args, **kwargs):
         self.slug = create_unique_slug(self)
         super(Country, self).save(*args, **kwargs)
+
+    def get_project_url(self, *args, **kwargs):
+        return reverse('project-create')
 
 class Project(models.Model):
     name = models.CharField(max_length=255)
