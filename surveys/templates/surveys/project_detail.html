@@ -1,10 +1,10 @@
 {% extends 'surveys/base_project.html' %}
 {% block tab_detail %}active{% endblock %}
 {% block project_card %}
-  <p>{{ project.country }}</p>
-  <p>{{ project.description }}</p>
-  <p>{{ project.survey_set.count }} Surveys Created</p>
-  <p>{{ project.get_sent_survey_count }} Surveys Sent</p>
-  <p>{{ project.contact_set.count }} Contacts</p>
-  <p>{{ project.get_respondent_count }} Respondents</p>
+  <p>Project Description: {{ project.description }}</p>
+  <p>Country: {{ project.country }}</p>
+  <p><strong>{{ project.survey_set.count }}</strong> Surveys Created</p>
+  <p><strong>{{ project.get_sent_survey_count|default:"0" }}</strong> Surveys Sent</p>
+  <p><strong>{{ project.contact_set.count }}</strong> Contacts</p>
+  <p><strong>{{ project.get_respondent_count|default:"0" }}</strong> Respondents</p>
 {% endblock %}

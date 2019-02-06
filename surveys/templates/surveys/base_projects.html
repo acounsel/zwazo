@@ -3,6 +3,9 @@
 {% block content %}
 <div class="container">
   <p class="h2 mb-5 text-white">Projects</p>
+  {% if request.GET.country %}
+  <p class="lead mb-3 text-white">Create a project to store your surveys, messages, and contacts.</p>
+  {% endif %}
   <div class="card text-center">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs">

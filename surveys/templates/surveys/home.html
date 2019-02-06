@@ -1,10 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<style xmlns="http://www.w3.org/2000/svg">
-  
-</style>
-<div class="w-75 mx-auto">
+<div class="mx-auto">
   <h1 class="text-white pb-5">Communicate with communities around the world.</h1>
 <!--     <h2 class="text-white h4">Choose a country below to send voice or SMS messages or create surveys</h2> -->
   <div id="id_map" class="my-5"></div>
@@ -23,17 +20,27 @@
     google.charts.setOnLoadCallback(drawRegionsMap);
 
     function drawRegionsMap() {
-      var data = google.visualization.arrayToDataTable([
-        ['Country', 'Popularity', 'Link'],
-        {% for country in country_list %}['{{ country.name }}', 100, '{{ country.get_project_url }}'],{% endfor %}
+      var dataTable = new google.visualization.DataTable();
+      dataTable.addColumn('string', 'Country');
+      dataTable.addColumn('number', 'Availability');
+      dataTable.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}});
+      dataTable.addColumn('string', 'URL');
+      dataTable.addRows([
+        {% for country in country_list %}['{{ country.name }}', 100, '<p>Outgoing SMS: <span class="text-success">Yes</span></p><p>Incoming SMS: <span class="text-danger">No</span></p><p>Voice Calls: <span class="text-success">Yes</span></p>', '{{ country.get_project_url }}'],{% endfor %}
       ]);
+      // var data = google.visualization.arrayToDataTable([
+      //   ['Country', 'Popularity', 'Link'],
+      //   {% for country in country_list %}['{{ country.name }}', 100, '{{ country.get_project_url }}'],{% endfor %}
+      // ]);
 
-      var view = new google.visualization.DataView(data);
-      view.setColumns([0, 1]);
+      var view = new google.visualization.DataView(dataTable);
+      view.setColumns([0, 1, 2]);
 
       var options = {
         colorAxis: {colors: ['#FFFFFF', '#FFFFFF']},
         backgroundColor: { fill:'transparent' },
+        legend: 'none',
+        tooltip: { isHtml: true },
       };
 
       var chart = new google.visualization.GeoChart(document.getElementById('id_map'));
@@ -41,8 +48,8 @@
       google.visualization.events.addListener(chart, 'select', function () {
         var selection = chart.getSelection();
         if (selection.length > 0) {
-          console.log(data.getValue(selection[0].row, 2));
-          window.open(data.getValue(selection[0].row, 2), '_blank');
+          console.log(dataTable.getValue(selection[0].row, 3));
+          window.open(dataTable.getValue(selection[0].row, 3), '_blank');
         }
       });
 

@@ -105,10 +105,8 @@ def run_survey(request, pk):
     welcome = 'Hello and thank you for taking the %s survey' % survey.name
     twiml_response = VoiceResponse()
     twiml_response.say(welcome)
-    print('Response1: {}'.format(twiml_response))
-    logger.error(twiml_response)
+    logger.info(twiml_response)
     twiml_response.redirect(first_question_url, method='GET')
-    print('Response2: {}'.format(twiml_response))
     messages.success(request, 'Survey Sent')
     return HttpResponse(twiml_response, content_type='application/xml')
 
