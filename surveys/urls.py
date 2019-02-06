@@ -40,6 +40,10 @@ urlpatterns = [
         path('<slug>/', include([
             path('', views.ProjectDetail.as_view(), name='project-detail'),
             path('update/', views.ProjectUpdate.as_view(), name='project-update'),
+            path('contacts/', include([
+                path('', views.ContactAdd.as_view(), name='contact-add'),
+                path('import/', views.ContactImport.as_view(), name='contact-import'),
+            ])),
         ])),
     ])),
 ]

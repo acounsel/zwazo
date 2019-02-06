@@ -13,6 +13,9 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'survey-list' %}?project={{ project.id }}">Surveys</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'survey-create' %}?project={{ project.id }}">Add Survey</a>
+        </li>
         {% endif %}
         <li class="nav-item">
           <a class="nav-link {% block tab_list %}{% endblock %}" href="{% url 'contact-list' %}?{% if project %}project={{ project.id }}{% endif %}">Contacts</a>

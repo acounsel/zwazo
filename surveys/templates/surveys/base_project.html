@@ -12,19 +12,19 @@
         <li class="nav-item">
           <a class="nav-link {% block tab_surveys %}{% endblock %}" href="{% url 'survey-list' %}?project={{ project.id }}">Surveys</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item"> 
           <a class="nav-link" href="{% url 'survey-create' %}{% if project %}?project={{ project.id }}{% endif %}">Add Survey</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'contact-list' %}?project={{ project.id }}">Contacts</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'contact-list' %}?project={{ project.id }}">Contacts</a>
+          <a class="nav-link {% block tab_contact %}{% endblock %}" href="{% url 'contact-add' slug=project.slug %}">Add Contacts</a>
         </li>
       </ul>
     </div>
     <div class="card-body">
-      <h5 class="card-title">Project</h5>
+      <h5 class="card-title lead">{{ title }}</h5>
       <div class="text-left">
       {% block project_card %}
       {% endblock %}

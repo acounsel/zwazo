@@ -1,3 +1,5 @@
+import csv
+import io
 import logging
 
 from django.conf import settings
@@ -335,6 +337,59 @@ class ContactCreate(ContactView, CreateView):
 
 class ContactUpdate(ContactView, UpdateView):
     pass
+
+class ContactAdd(ProjectDetail):
+    template_name = 'surveys/contact_add.html'
+
+class ContactImport(ProjectDetail):
+    template_name = 'surveys/contact_import.html'
+
+    def post(self, request, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+        try:
+            import_file = request.FILES['csv_file']
+            print(import_file)
+        except KeyError:
+            messages.error(request, 'Please upload a file.')
+        else: 
+            print('Uploading file...')
+            self.import_csv_data(import_file)
+        return redirect(reverse('contact-list') + '?project={}'.format(self.object.id))
+
+    def import_csv_data(self, import_file):
+        errors = []
+        try:
+            # with open(import_file, 'rt', encoding="utf-8", errors='ignore') as csvfile:
+            reader = csv.DictReader(io.StringIO(import_file.read().decode('utf-8')))
+        except Exception as error:
+            errors.append(error)
+            messages.error(self.request, \
+                'Failed to read file. Please make sure the file is in CSV format.')
+        else:
+            errors = self.enumerate_rows(reader)
+        print(errors)
+        if not errors:
+            print('Importing Data...')
+        return errors
+
+    # Loop through CSV, skipping header row.
+    def enumerate_rows(self, reader, start=2):
+        print(reader.__dict__)
+        # Index is for row numbers in error message-s.
+        for index, contact in enumerate(reader, start=2):
+            print('Here we go!')
+            row_errors = []
+            try:
+                self.import_contact_row(contact)
+            except Exception as error:
+                row_errors.append('Row {0}: {1}'.format(index, error))
+        return row_errors
+
+    def import_contact_row(self, contact_dict):
+        print(contact_dict)
+        contact = Contact.objects.create(**contact_dict)
+        return contact
 
 class QuestionResponseView(LoginRequiredMixin, View):
     model = QuestionResponse
