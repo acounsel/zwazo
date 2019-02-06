@@ -13,8 +13,7 @@
 {% endblock %}
 
 {% block javascript %}
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js">
-  </script>
+
   <script src="https://www.google.com/jsapi"></script>
   <script type="text/javascript">
     google.charts.load('current', {
@@ -26,25 +25,24 @@
     function drawRegionsMap() {
       var data = google.visualization.arrayToDataTable([
         ['Country', 'Popularity', 'Link'],
-        {% for country in country_list %}[{{ country.name }}, 100, {{ country.get_project_url }}],{% endfor %}
+        {% for country in country_list %}['{{ country.name }}', 100, '{{ country.get_project_url }}'],{% endfor %}
       ]);
 
       var view = new google.visualization.DataView(data);
       view.setColumns([0, 1]);
 
       var options = {
-        colorAxis: {colors: ['#FFFFFF',]},
+        colorAxis: {colors: ['#FFFFFF', '#FFFFFF']},
         backgroundColor: { fill:'transparent' },
       };
 
       var chart = new google.visualization.GeoChart(document.getElementById('id_map'));
 
       google.visualization.events.addListener(chart, 'select', function () {
-        console.log('Hello??');
         var selection = chart.getSelection();
         if (selection.length > 0) {
           console.log(data.getValue(selection[0].row, 2));
-          //window.open('http://' + data.getValue(selection[0].row, 2), '_blank');
+          window.open(data.getValue(selection[0].row, 2), '_blank');
         }
       });
 

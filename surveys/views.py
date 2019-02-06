@@ -51,7 +51,7 @@ class SurveyList(SurveyView, ListView):
         return queryset
 
 class Home(ListView):
-    model = Survey
+    model = Country
     template_name = 'surveys/home.html'
 
 class SurveyDetail(SurveyView, DetailView):
@@ -284,7 +284,13 @@ class ProjectDetail(ProjectView, DetailView):
     pass
 
 class ProjectCreate(ProjectView, CreateView):
-    pass
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # context = self.get_context_data(**kwargs)
+        if self.request.GET.get('country'):
+            initial['country'] = Country.objects.get(id=self.request.GET.get('country'))
+        return initial.copy()
 
 class ProjectUpdate(ProjectView, UpdateView):
     pass

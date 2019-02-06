@@ -53,7 +53,7 @@ class Country(models.Model):
         super(Country, self).save(*args, **kwargs)
 
     def get_project_url(self, *args, **kwargs):
-        return reverse('project-create')
+        return reverse('project-create') + '?country={}'.format(self.id)
 
 class Project(models.Model):
     name = models.CharField(max_length=255)
