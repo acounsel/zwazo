@@ -2,7 +2,12 @@
 
 {% block content %}
 <div class="container">
+  <div class="d-flex flex-column flex-lg-row justify-content-between">
   <p class="h2 mb-5 text-white">{% if project %}{{ project.name }}{% else %}Surveys{% endif %}</p>
+  {% if project %}
+    {% include 'addins/progress_bar.html' %}
+  {% endif %}
+  </div>
   <div class="card text-center">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs">
@@ -10,15 +15,6 @@
         <li class="nav-item">
           <a class="nav-link {% block tab_detail %}{% endblock %}" href="{% url 'project-detail' slug=project.slug %}">Project Details</a>
         </li>
-        {% endif %}
-        <li class="nav-item">
-          <a class="nav-link {% block tab_list %}{% endblock %}" href="{% url 'survey-list' %}{% if project %}?project={{ project.id }}{% endif %}">Surveys</a>
-        </li>
-        {% block tab_responses %}{% endblock %}
-        <li class="nav-item">
-          <a class="nav-link {% block tab_form %}{% endblock %}" href="{% url 'survey-create' %}{% if project %}?project={{ project.id }}{% endif %}">Add Survey</a>
-        </li>
-        {% if project %}
         <li class="nav-item">
           <a class="nav-link {% block tab_contacts %}{% endblock %}" href="{% url 'contact-list' %}?project={{ project.id }}">Contacts</a>
         </li>
@@ -26,10 +22,17 @@
           <a class="nav-link" href="{% url 'contact-add' slug=project.slug %}">Add Contact</a>
         </li>
         {% endif %}
+        <li class="nav-item">
+          <a class="nav-link {% block tab_list %}{% endblock %}" href="{% url 'survey-list' %}{% if project %}?project={{ project.id }}{% endif %}">Surveys</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% block tab_form %}{% endblock %}" href="{% url 'survey-create' %}{% if project %}?project={{ project.id }}{% endif %}">Add Survey</a>
+        </li> 
+        {% block tab_responses %}{% endblock %} 
       </ul>
     </div>
     <div class="card-body">
-      <h3 class="card-title mb-5">{% if survey %}<a href="{% url 'survey-detail' pk=survey.id %}">{{ survey.name }}</a>{% else %}Surveys{% endif %}</h3>
+      <h3 class="card-title mb-5">{% if survey %}<a href="{% url 'survey-detail' pk=survey.id %}" class="text-dark">{{ survey.name }}</a>{% else %}Surveys{% endif %}</h3>
       <div class="text-left">
       {% block card %}
       {% endblock %}

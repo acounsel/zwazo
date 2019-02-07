@@ -1,16 +1,19 @@
 {% extends 'surveys/base_project.html' %}
+{% block subtitle %}
+<p class="lead mb-3 text-white">Add lists or individual contacts to your projects. Contacts can be used across multiple surveys in a given project.</p>
+{% endblock %}
 {% block tab_contact %}active{% endblock %}
 {% block project_card %}
-  <div class="d-flex flex-row">
-    <div class="flex-fill border-right p-4 w-50">
+  <div class="d-flex flex-column flex-lg-row">
+    <div class="flex-fill border-right p-4 w-50 w-100-r">
       <p class="lead pb-4 text-dark"><strong>Import Contacts</strong></p>
       <p class="lead pb-4 text-dark">If you have a large number of contacts or have a prepared list, upload the file here for processing.</p>
-      <p><a href="{% url 'contact-import' slug=project.slug %}" class="btn btn-lg btn-primary w-25">Import</a></p>
+      <p><a href="{% url 'contact-import' slug=project.slug %}" class="btn btn-lg btn-primary w-25 w-100-r">Import</a></p>
     </div>
-    <div class="flex-fill p-4 pl-5 w-50">
+    <div class="flex-fill p-4 pl-5 pl-4-r w-50 w-100-r">
       <p class="lead pb-4 text-dark"><strong>Contact Form</strong></p>
       <p class="lead pb-4 text-dark">Click here to enter new contacts one by one using our contact form. </p>
-      <p><a href="{% url 'contact-create' %}?project=project.id" class="btn btn-lg btn-primary w-25">Add</a></p>
+      <p><a href="{% url 'contact-create' %}?project={{ project.id }}" class="btn btn-lg btn-primary w-25 w-100-r">Add</a></p>
     </div>
   </div>
 {% endblock %}

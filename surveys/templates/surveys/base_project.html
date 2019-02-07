@@ -2,7 +2,11 @@
 
 {% block content %}
 <div class="container">
-  <p class="h2 mb-5 text-white">{{ project.name }}</p>
+  <div class="d-flex flex-column flex-lg-row justify-content-between mb-5">
+    <p class="h2 text-white">{{ project.name }}</p>
+    {% include 'addins/progress_bar.html' %}
+  </div>
+  {% block subtitle %}{% endblock %}
   <div class="card text-center">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs">
@@ -10,16 +14,16 @@
           <a class="nav-link {% block tab_detail %}{% endblock %}" href="{% url 'project-detail' slug=project.slug %}">Project Details</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {% block tab_surveys %}{% endblock %}" href="{% url 'survey-list' %}?project={{ project.id }}">Surveys</a>
-        </li>
-        <li class="nav-item"> 
-          <a class="nav-link" href="{% url 'survey-create' %}{% if project %}?project={{ project.id }}{% endif %}">Add Survey</a>
-        </li>
-        <li class="nav-item">
           <a class="nav-link" href="{% url 'contact-list' %}?project={{ project.id }}">Contacts</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% block tab_contact %}{% endblock %}" href="{% url 'contact-add' slug=project.slug %}">Add Contacts</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% block tab_surveys %}{% endblock %}" href="{% url 'survey-list' %}?project={{ project.id }}">Surveys</a>
+        </li>
+        <li class="nav-item"> 
+          <a class="nav-link" href="{% url 'survey-create' %}{% if project %}?project={{ project.id }}{% endif %}">Add Survey</a>
         </li>
       </ul>
     </div>

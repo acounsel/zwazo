@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class SurveyView(LoginRequiredMixin, View):
     model = Survey
-    fields = ('name', 'language', 'project', 'respondents')
+    fields = ('name', 'language')
 
     def get_success_url(self, **kwargs):         
         return reverse_lazy('question-create', args = (self.object.id,))
@@ -45,6 +45,11 @@ class SurveyView(LoginRequiredMixin, View):
         return initial.copy()
 
 class SurveyList(SurveyView, ListView):
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['setup_percent'] = 100
+        return context
 
     def get_queryset(self):
         queryset = super(SurveyList, self).get_queryset()
@@ -233,7 +238,22 @@ def _extract_request_body(request, question_kind):
     return request.POST.get(key)
 
 class SurveyCreate(SurveyView, CreateView):
-    pass
+    
+    def get_success_url(self, **kwargs):         
+        return reverse_lazy('question-create', kwargs = {'pk': self.object.id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['setup_percent'] = 50
+        return context
+
+    def form_valid(self, form):
+        if self.request.GET.get('project'):
+            form.instance.project = Project.objects.get(id=self.request.GET.get('project'))
+            form.instance.save()
+            for contact in form.instance.project.contact_set.all():
+                form.instance.respondents.add(contact)
+        return super().form_valid(form)
 
 class SurveyUpdate(SurveyView, UpdateView):
     pass
@@ -243,7 +263,7 @@ class SurveyResponse(SurveyView, DetailView):
     
 class QuestionView(LoginRequiredMixin, View):
     model = Question
-    fields = ('body', 'kind', 'sound', 'survey')
+    fields = ('body', 'kind', 'sound')
 
     def get_success_url(self, **kwargs):         
         return reverse_lazy('question-create', kwargs = {'pk': self.object.survey.id})
@@ -264,11 +284,20 @@ class QuestionDetail(QuestionView, DetailView):
 
 class QuestionCreate(QuestionView, CreateView):
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['setup_percent'] = 75
+        return context
+
     def get_initial(self):
         initial = super(QuestionCreate, self).get_initial()
         # context = self.get_context_data(**kwargs)
         initial['survey'] = Survey.objects.get(id=self.kwargs['pk'])
         return initial.copy()
+
+    def form_valid(self, form):
+        form.instance.survey = Survey.objects.get(id=self.kwargs['pk'])
+        return super().form_valid(form)
 
 class QuestionUpdate(QuestionView, UpdateView):
     pass
@@ -285,6 +314,9 @@ class ProjectDetail(ProjectView, DetailView):
 
 class ProjectCreate(ProjectView, CreateView):
 
+    def get_success_url(self, **kwargs):         
+        return reverse_lazy('contact-add', args = (self.object.slug,))
+
     def get_initial(self):
         initial = super().get_initial()
         # context = self.get_context_data(**kwargs)
@@ -297,7 +329,7 @@ class ProjectUpdate(ProjectView, UpdateView):
 
 class ContactView(LoginRequiredMixin, View):
     model = Contact
-    fields = ('first_name', 'last_name', 'project', 'phone', 'email')
+    fields = ('first_name', 'last_name', 'phone', 'email')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -316,6 +348,14 @@ class ContactDetail(ContactView, DetailView):
 
 class ContactCreate(ContactView, CreateView):
 
+    def get_success_url(self):
+        return reverse_lazy('contact-create') + '?project={}'.format(self.request.GET.get('project'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['setup_percent'] = 25
+        return context
+
     def get_initial(self):
         initial = super().get_initial()
         # context = self.get_context_data(**kwargs)
@@ -324,7 +364,8 @@ class ContactCreate(ContactView, CreateView):
         return initial.copy()
 
     def form_valid(self, form):
-        if form.instance.project:
+        if self.request.GET.get('project'):
+            form.instance.project = Project.objects.get(id=self.request.GET.get('project'))
             self.add_project_contacts_to_surveys(form.instance.project)
         return super().form_valid(form)
 
@@ -341,8 +382,18 @@ class ContactUpdate(ContactView, UpdateView):
 class ContactAdd(ProjectDetail):
     template_name = 'surveys/contact_add.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['setup_percent'] = 25
+        return context
+
 class ContactImport(ProjectDetail):
     template_name = 'surveys/contact_import.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['setup_percent'] = 25
+        return context
 
     def post(self, request, **kwargs):
         self.object = self.get_object()
@@ -353,7 +404,8 @@ class ContactImport(ProjectDetail):
             messages.error(request, 'Please upload a file.')
         else: 
             self.import_csv_data(import_file)
-        return redirect(reverse('contact-list') + '?project={}'.format(self.object.id))
+        return redirect(reverse('survey-create')+'?project={}'.format(self.object.id))
+        # return redirect(reverse('contact-list') + '?project={}'.format(self.object.id))
 
     def import_csv_data(self, import_file):
         errors = []
