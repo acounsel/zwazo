@@ -21,7 +21,7 @@
       <tr>
         <td>{{ response.question.body }}</td>
         <td>{{ response.question.get_kind_display }}</td>
-        <td>{% if response.question.kind == 'text' %}<a href="{{ response.response }}">Link</a>{% else %}{{ response.response }}{% endif %}</td>
+        <td>{{ response.response }}</td>
         <td>{{ response.call_sid }}</td>
         <td>{{ response.phone_number }}</td>
       </tr>

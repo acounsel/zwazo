@@ -67,9 +67,7 @@ class SurveyDetail(SurveyView, DetailView):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         client = self.get_twilio_client()
-        print(self.object.respondents.all())
         for contact in self.object.respondents.all():
-            print(contact)
             self.voice_survey(request, contact, client, self.object)
         messages.success(request, 'Message successfuly sent')
         return self.render_to_response(context=context)
@@ -88,7 +86,6 @@ class SurveyDetail(SurveyView, DetailView):
                 reverse('run-survey', kwargs={'pk':survey.id})
             )
         )
-        print(call)
         return True
 
     def sms_survey(self, request, contact):
@@ -121,7 +118,7 @@ def run_survey(request, pk):
 @require_GET
 @validate_twilio_request
 def run_question(request, pk, question_pk):
-    question = Question.objects.get(id=pk)
+    question = Question.objects.get(id=question_pk)
     twiml_response = VoiceResponse()
 
     twiml_response.say(question.body)
@@ -174,9 +171,7 @@ def redirects_twilio_request_to_proper_endpoint(request):
 @validate_twilio_request
 def save_response(request, pk, question_pk):
     question = Question.objects.get(id=question_pk)
-
     save_response_from_request(request, question)
-
     next_question = question.next()
     if not next_question:
         return goodbye(request)
@@ -186,7 +181,6 @@ def save_response(request, pk, question_pk):
 def next_question_redirect(question_pk, pk):
     parameters = {'pk': pk, 'question_pk': question_pk}
     question_url = reverse('question', kwargs=parameters)
-
     twiml_response = MessagingResponse()
     twiml_response.redirect(url=question_url, method='GET')
     return HttpResponse(twiml_response)
@@ -208,8 +202,9 @@ def goodbye(request):
 def save_response_from_request(request, question):
     # session_id = request.POST['MessageSid' if request.is_sms else 'CallSid']
     session_id = request.POST['CallSid']
+    print('ALL POSTED DATA BELOW =============================================={}'.format(request.POST))
     request_body = _extract_request_body(request, question.kind)
-    phone_number = request.POST['From']
+    phone_number = request.POST['To']
 
     response = QuestionResponse.objects.filter(question_id=question.id,
                                                call_sid=session_id).first()
