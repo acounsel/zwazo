@@ -16,7 +16,19 @@ def create_unique_slug(instance):
         slug = slugify(instance.name) + str(iterator)
     return slug
 
+class LanguageManager(models.Manager):
+    def import_languages(self):
+        with open('data/languages.csv', encoding="utf-8", errors='ignore') as csvfile:
+            reader = csv.DictReader(csvfile)
+            iterator = 0
+            for row in reader:
+                self.create(name=row['Name'])
+                iterator += 1
+        return iterator
+
 class Language(models.Model):
+    objects = LanguageManager()
+
     name = models.CharField(max_length=255)
 
     def __str__(self):
