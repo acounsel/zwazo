@@ -22,6 +22,7 @@ urlpatterns = [
                     path('save/', views.save_response, name='save_response'),
                     path('next/', views.run_question, name='question'),
                     path('update/', views.QuestionUpdate.as_view(), name='question-update'),
+                    path('sound/', views.QuestionSound.as_view(), name='question-sound'),
                 ])),
             ])),
         ])),

@@ -6,6 +6,8 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.text import slugify
 
+from zwazo.storage_backends import PrivateMediaStorage
+
 from accounts.models import Organization
 
 def create_unique_slug(instance):
@@ -98,11 +100,34 @@ class Contact(models.Model):
     def get_absolute_url(self): 
         return reverse('contact-list') + '?project={0}'.format(getattr(self.project, 'id', ''))
 
+class Prompt(models.Model):
+    NUMERIC = 'numeric'
+    TEXT = 'text'
+    YES_NO = 'yes_no'
+    CATEGORY_CHOICES = (
+        (NUMERIC, 'Numeric'),
+        (TEXT, 'Text'),
+        (YES_NO, 'Yes/No')
+    )
+
+    name = models.CharField(max_length=255)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '%s' % self.name
+
 class Survey(models.Model):
+
     name = models.CharField(max_length=255)
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, blank=True, null=True)
+    text_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='text_surveys')
+    yes_no_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='yes_no_surveys')
+    numeric_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='numeric_surveys')
     respondents = models.ManyToManyField(Contact, blank=True)
+
 
     @property
     def responses(self):
@@ -132,6 +157,7 @@ class Question(models.Model):
     body = models.CharField(max_length=255)
     kind = models.CharField(max_length=255, choices=QUESTION_KIND_CHOICES, default=YES_NO)
     sound = models.CharField(max_length=255, blank=True)
+    sound_file = models.FileField(storage=PrivateMediaStorage(), upload_to='files/', blank=True, null=True)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
 
     @classmethod
@@ -152,6 +178,9 @@ class Question(models.Model):
 
     def __str__(self):
         return '%s' % self.body
+
+    def get_prompt(self):
+        return getattr(self.survey, '{}_prompt'.format(self.kind.replace('-','_')))
 
 class QuestionResponse(models.Model):
     response = models.CharField(max_length=255)

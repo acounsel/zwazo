@@ -19,9 +19,9 @@
         <tbody>
           {% for question in survey.question_set.all %}
           <tr>
-            <td>{{ question.body }}</td> 
+            <td><a href="{% url 'question-update' pk=question.survey.id question_pk=question.id %}">{{ question.body }}</a></td> 
             <td>{{ question.get_kind_display }}</td>
-            <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>
+            <td>{% if question.sound_file %}Yes{% else %}No{% endif %}</td>
           </tr>
           {% endfor %}
         </tbody>

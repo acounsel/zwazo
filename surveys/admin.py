@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from surveys.models import Language, Country, Project, Contact
+from surveys.models import Language, Country, Project, Contact, Prompt
 from surveys.models import Survey, Question, QuestionResponse
 
 admin.site.register(Language)
@@ -9,6 +9,7 @@ admin.site.register(Project)
 admin.site.register(Contact)
 admin.site.register(Survey)
 admin.site.register(Question)
+admin.site.register(Prompt)
 
 @admin.register(QuestionResponse)
 class QuestionResponseAdmin(admin.ModelAdmin):

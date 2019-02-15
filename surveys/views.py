@@ -18,6 +18,7 @@ from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.twiml.voice_response import Gather, Dial, VoiceResponse, Say
 
+from .forms import SurveyForm
 from .models import Language, Country, Project, Contact
 from .models import Survey, Question, QuestionResponse
 from .decorators import validate_twilio_request
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class SurveyView(LoginRequiredMixin, View):
     model = Survey
-    fields = ('name', 'language')
+    form_class = SurveyForm
 
     def get_success_url(self, **kwargs):         
         return reverse_lazy('question-create', args = (self.object.id,))
@@ -80,6 +81,7 @@ class SurveyDetail(SurveyView, DetailView):
 
     def voice_survey(self, request, contact, client, survey):
         call = client.calls.create(
+            # machine_detection='Enable',
             to=contact.phone,
             from_='+14152956702',
             url=request.build_absolute_uri(
@@ -120,12 +122,14 @@ def run_survey(request, pk):
 def run_question(request, pk, question_pk):
     question = Question.objects.get(id=question_pk)
     twiml_response = VoiceResponse()
-
-    twiml_response.say(question.body)
-    twiml_response.say(VOICE_INSTRUCTIONS[question.kind])
-
     action = save_response_url(question)
+    
     if question.kind == Question.TEXT:
+        if question.sound_file:
+            twiml_response.play(question.sound_file.url)
+        else:
+            twiml_response.say(question.body)
+        twiml_response.say(VOICE_INSTRUCTIONS[question.kind])
         twiml_response.record(
             action=action,
             method='POST',
@@ -134,7 +138,13 @@ def run_question(request, pk, question_pk):
             transcribe_callback=action
         )
     else:
-        twiml_response.gather(action=action, method='POST')
+        gather = Gather(action=action, method='POST')
+        if question.sound_file:
+            gather.play(question.sound_file.url)
+        else:
+            gather.say(question.body)
+        gather.say(VOICE_INSTRUCTIONS[question.kind])
+        twiml_response.append(gather)
 
     request.session['answering_question_id'] = question.id
     return HttpResponse(twiml_response, content_type='application/xml')
@@ -233,6 +243,7 @@ def _extract_request_body(request, question_kind):
     return request.POST.get(key)
 
 class SurveyCreate(SurveyView, CreateView):
+    form_class = SurveyForm
     
     def get_success_url(self, **kwargs):         
         return reverse_lazy('question-create', kwargs = {'pk': self.object.id})
@@ -258,7 +269,11 @@ class SurveyResponse(SurveyView, DetailView):
     
 class QuestionView(LoginRequiredMixin, View):
     model = Question
-    fields = ('body', 'kind', 'sound')
+    fields = ('body', 'kind', 'sound_file')
+
+    def get_object(self, queryset=None):
+        obj = Question.objects.get(id=self.kwargs['question_pk'])
+        return obj
 
     def get_success_url(self, **kwargs):         
         return reverse_lazy('question-create', kwargs = {'pk': self.object.survey.id})
@@ -296,6 +311,10 @@ class QuestionCreate(QuestionView, CreateView):
 
 class QuestionUpdate(QuestionView, UpdateView):
     pass
+
+class QuestionSound(QuestionView, UpdateView):
+    template_name = 'surveys/question_sound.html'
+
 
 class ProjectView(LoginRequiredMixin, View):
     model = Project

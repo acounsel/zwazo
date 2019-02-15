@@ -1,0 +1,19 @@
+{% extends 'surveys/base_surveys.html' %}
+{% block tab_list %}active{% endblock %}
+
+{% block card %}
+  <div id="controls">
+    <button id="recordButton">Record</button>
+  </div>
+  <div id="formats"></div>
+  
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript">
+  var AudioContext = window.AudioContext || window.webkitAudioContext;
+  var audioCtx = new AudioContext();
+  document.getElementById("formats").innerHTML="Format: 1 channel mp3 @ "+audioCtx.sampleRate/1000+"kHz"
+  console.log(audioCtx.sampleRate);
+  </script>
+{% endblock %}

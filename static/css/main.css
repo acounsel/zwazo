@@ -115,6 +115,7 @@ html {
     fill:transparent;
   }
 
+
 @media only screen and (max-width: 800px) {
   .w-100-r {
     width: 100% !important;
