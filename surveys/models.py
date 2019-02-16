@@ -53,6 +53,7 @@ class Country(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, blank=True)
     code = models.CharField(max_length=5, blank=True)
+    language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     latitude = models.IntegerField(blank=True, null=True)
     longitude = models.IntegerField(blank=True, null=True)
 
@@ -113,16 +114,28 @@ class Prompt(models.Model):
     name = models.CharField(max_length=255)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    sound_file = models.FileField(storage=PrivateMediaStorage(), upload_to='files/', blank=True, null=True)
     is_default = models.BooleanField(default=False)
 
     def __str__(self):
         return '%s' % self.name
 
 class Survey(models.Model):
+    DEFAULT = 'default'
+    TEXT = 'text'
+    SOUND = 'sound'
+    NONE = 'none'
+    PROMPT_CHOICES = (
+        (DEFAULT, 'Default Prompts'),
+        (TEXT, 'Custom Text'),
+        (SOUND, 'Custom Sound'),
+        (NONE, 'No Prompts')
+    )
 
     name = models.CharField(max_length=255)
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, blank=True, null=True)
+    prompt_type = models.CharField(max_length=50, choices=PROMPT_CHOICES, default=DEFAULT)
     text_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='text_surveys')
     yes_no_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='yes_no_surveys')
     numeric_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='numeric_surveys')

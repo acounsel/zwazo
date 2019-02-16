@@ -13,6 +13,7 @@ urlpatterns = [
             path('run/', views.run_survey, name='run-survey'),
             path('update/', views.SurveyUpdate.as_view(), name='survey-update'),
             path('responses/', views.SurveyResponse.as_view(), name='survey-response'),
+            path('prompts/', views.SurveyPrompts.as_view(), name='survey-prompts'),
             path('questions/', include([
                 path('', views.QuestionList.as_view(), name='question-list'),
                 path('add/', views.QuestionCreate.as_view(), name='question-create'),
@@ -25,6 +26,14 @@ urlpatterns = [
                     path('sound/', views.QuestionSound.as_view(), name='question-sound'),
                 ])),
             ])),
+        ])),
+    ])),
+    path('prompts/', include([
+        path('', views.PromptView.as_view(), name='prompt-list'),
+        path('add/', views.PromptCreate.as_view(), name='prompt-create'),
+        path('<int:pk>/', include([
+            path('', views.PromptDetail.as_view(), name='prompt-detail'),
+            path('update/', views.PromptUpdate.as_view(), name='prompt-detail'),
         ])),
     ])),
     path('contacts/', include([

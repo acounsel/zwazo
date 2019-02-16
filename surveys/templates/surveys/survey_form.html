@@ -29,3 +29,32 @@
 
 </div>
 {% endblock %}
+{% block javascript %}
+<script>
+  var select = $('.SelectizeCreate').selectize({
+    placeholder: 'Select an existing prompt or type a new one',
+    create:function (input, callback){
+      console.log($( this )[0].id);
+      console.log(select);
+      $.ajax({
+        url: '{% url "prompt-create" %}',
+        data: {
+          'name': input,
+          'category': 'something',
+          'survey': '{{ survey.id }}',
+          'csrfmiddlewaretoken': '{{ csrf_token }}',
+        },
+        type: 'POST',
+        success: function (result) {
+          if (result) {
+            callback({
+              value: result, 
+              text: input,
+            });
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

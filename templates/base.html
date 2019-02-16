@@ -5,17 +5,22 @@
   <meta name="description" content="{{ metadata }}">
   <!-- <meta name="robots" content="index,follow" /> -->
   <title>Zwazo</title>
+  <link href="{% static 'css/jquery-ui.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/selectize.css' %}" rel="stylesheet">
+  <link href="{% static 'css/selectize.bootstrap3.css' %}" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700|Open+Sans:400,600|Montserrat:200,400,600" rel="stylesheet">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
   <link rel="icon" type="image/png" href="https://www.accountabilitycounsel.org/wp-content/themes/acco/img/favicon/favicon-32x32.png" sizes="32x32">
   <link rel="icon" type="image/png" href="https://www.accountabilitycounsel.org/wp-content/themes/acco/img/favicon/favicon-16x16.png" sizes="16x16">
   <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
   <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/jquery-ui/jquery-ui.min.js' %}"></script>
   <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
   <script defer src="{% static 'fonts/fontawesome/js/all.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script src="{% static 'js/vmsg_app.js' %}" type="module"></script>
+  <script type="text/javascript" src="{% static 'js/selectize.min.js' %}"></script>
+<!--   <script src="{% static 'js/vmsg_app.js' %}" type="module"></script> -->
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
 {% block body %}
@@ -42,9 +47,12 @@
   {% block javascript %}
   {% endblock %}
   <script type="text/javascript">
-  $('.Message').click(function() {
-    $('.Message').fadeOut("slow");
-  });
+    $( '.Message' ).click(function() {
+      $( '.Message' ).fadeOut("slow");
+    });
+  </script>
+  <script type="text/javascript">
+    $( 'select:not(.SelectizeCreate)' ).selectize();
   </script>
 </body>
 {% endblock %}

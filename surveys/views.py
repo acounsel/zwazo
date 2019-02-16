@@ -19,7 +19,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from twilio.twiml.voice_response import Gather, Dial, VoiceResponse, Say
 
 from .forms import SurveyForm
-from .models import Language, Country, Project, Contact
+from .models import Language, Country, Project, Contact, Prompt
 from .models import Survey, Question, QuestionResponse
 from .decorators import validate_twilio_request
 
@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 class SurveyView(LoginRequiredMixin, View):
     model = Survey
-    form_class = SurveyForm
+    fields = ('name', 'language', 'prompt_type')
 
-    def get_success_url(self, **kwargs):         
-        return reverse_lazy('question-create', args = (self.object.id,))
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('survey-prompts', args = (self.object.id,))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -243,10 +243,6 @@ def _extract_request_body(request, question_kind):
     return request.POST.get(key)
 
 class SurveyCreate(SurveyView, CreateView):
-    form_class = SurveyForm
-    
-    def get_success_url(self, **kwargs):         
-        return reverse_lazy('question-create', kwargs = {'pk': self.object.id})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -263,6 +259,19 @@ class SurveyCreate(SurveyView, CreateView):
 
 class SurveyUpdate(SurveyView, UpdateView):
     pass
+
+class SurveyPrompts(SurveyUpdate):
+    fields = None
+    form_class = SurveyForm
+    # template_name = 'surveys/survey_prompts.html'
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('question-create', args = (self.object.id,))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['setup_percent'] = 50
+        return context
 
 class SurveyResponse(SurveyView, DetailView):
     template_name = 'surveys/survey_results.html'
@@ -458,4 +467,34 @@ class QuestionResponseList(QuestionResponseView, ListView):
 class QuestionResponseDetail(QuestionResponseView, DetailView):
     pass
 
+class PromptView(LoginRequiredMixin, View):
+    template_name = 'surveys/survey_form.html'
+    model = Prompt
+    fields = ('name', 'language', 'category', 'sound_file')
+
+class PromptList(PromptView, ListView):
+    pass
+
+class PromptDetail(PromptView, DetailView):
+    pass
+
+class PromptCreate(PromptView, CreateView):
+
+    def post(self, request, **kwargs):
+        survey = Survey.objects.get(id=request.POST['survey'])
+        category = request.POST['category']
+        prompt = Prompt.objects.create(
+            name=request.POST['name'],
+            category=category,
+            language=survey.language,
+        )
+        setattr(survey, '{}_prompt'.format(category), prompt)
+        return HttpResponse(prompt.id)
+
+    def form_valid(self, form):
+        print(form)
+        return super().form_valid(form)
+
+class PromptUpdate(PromptView, UpdateView):
+    pass
 
