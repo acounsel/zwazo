@@ -32,15 +32,14 @@
 {% block javascript %}
 <script>
   var select = $('.SelectizeCreate').selectize({
+
     placeholder: 'Select an existing prompt or type a new one',
     create:function (input, callback){
-      console.log($( this )[0].id);
-      console.log(select);
       $.ajax({
         url: '{% url "prompt-create" %}',
         data: {
           'name': input,
-          'category': 'something',
+          'category': $( this )[0].$input.attr('category'),
           'survey': '{{ survey.id }}',
           'csrfmiddlewaretoken': '{{ csrf_token }}',
         },

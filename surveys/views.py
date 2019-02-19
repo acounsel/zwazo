@@ -12,13 +12,13 @@ from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.views.generic import View, DetailView, ListView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, FormView
 
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.twiml.voice_response import Gather, Dial, VoiceResponse, Say
 
-from .forms import SurveyForm
+from .forms import SurveyForm, PromptFormSet
 from .models import Language, Country, Project, Contact, Prompt
 from .models import Survey, Question, QuestionResponse
 from .decorators import validate_twilio_request
@@ -30,6 +30,7 @@ class SurveyView(LoginRequiredMixin, View):
     fields = ('name', 'language', 'prompt_type')
 
     def get_success_url(self, **kwargs):
+        return self.object.get_prompt_url()
         return reverse_lazy('survey-prompts', args = (self.object.id,))
 
     def get_context_data(self, **kwargs):
@@ -272,6 +273,15 @@ class SurveyPrompts(SurveyUpdate):
         context = super().get_context_data(**kwargs)
         context['setup_percent'] = 50
         return context
+
+class SurveyPromptSound(SurveyDetail):
+    template_name = 'surveys/prompt_sound.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['formset'] = PromptFormSet(queryset=Prompt.objects.none())
+        return context
+
 
 class SurveyResponse(SurveyView, DetailView):
     template_name = 'surveys/survey_results.html'

@@ -156,6 +156,14 @@ class Survey(models.Model):
     def get_absolute_url(self):
         return reverse('survey-detail', kwargs={'pk':self.id})
 
+    def get_prompt_url(self):
+        if self.prompt_type == self.TEXT:
+            return reverse('survey-prompts', kwargs={'pk':self.id})
+        elif self.prompt_type == self.SOUND:
+            return reverse('survey-prompt-sound', kwargs={'pk':self.id}) 
+        else:
+            return reverse('question-create', kwargs={'pk':self.id})
+
 class Question(models.Model):
     TEXT = 'text'
     YES_NO = 'yes-no'

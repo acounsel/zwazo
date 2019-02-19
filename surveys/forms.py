@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import ModelForm, inlineformset_factory
+from django.forms import ModelForm, modelformset_factory
 
 from .models import Prompt, Survey
 
@@ -7,11 +7,11 @@ class SurveyForm(ModelForm):
 
     class Meta(object):
         model = Survey
-        fields = ('name', 'language', 'text_prompt', 'yes_no_prompt', 'numeric_prompt')
+        fields = ('text_prompt', 'yes_no_prompt', 'numeric_prompt')
         widgets = {
-            'text_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'data-data': Prompt.TEXT}), 
-            'yes_no_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'data-data': Prompt.YES_NO}), 
-            'numeric_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'data-data': Prompt.NUMERIC})
+            'text_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'text'}), 
+            'yes_no_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'yes_no'}),
+            'numeric_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'numeric'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -26,4 +26,4 @@ class PromptForm(ModelForm):
         model = Prompt
         fields = ('name', 'category', 'sound_file')
 
-# PromptFormSet = inlineformset_factory(Prompt, Survey, form=PromptForm, extra=3)
+PromptFormSet = modelformset_factory(Prompt, fields=('name', 'category', 'sound_file'), extra=3)
