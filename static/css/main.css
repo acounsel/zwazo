@@ -121,7 +121,36 @@ html {
     -webkit-appearance: none;
     -moz-appearance: none;
   }
-
+  .CheckboxIcon {
+    border: 2px solid #ced4da;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 42%;
+    transition: all 0.2s ease-in-out
+  }
+  .CheckboxIcon:hover {
+    border: 2px solid #FF69B4;
+  }
+  .CheckboxIcon input[type="checkbox"] {
+    display: none;
+  }
+  .CheckboxIcon input[type="checkbox"] ~ .checked, .CheckboxIcon input[type="checkbox"] ~ .IconText{
+    transition: all 0.2s ease-in-out
+  }
+  .CheckboxIcon svg, .CheckboxIcon .IconText {
+    color: #ced4da;
+  }
+  .CheckboxIcon input[type="checkbox"]:checked {
+    border-color: #FF69B4;
+  }
+  .CheckboxIcon input[type="checkbox"]:checked ~ .checked {
+    display: inline-block;
+    color: #FF69B4;
+  }
+  .CheckboxIcon input[type="checkbox"]:checked ~ .IconText {
+    color: #FF69B4;
+    font-weight: 600;
+  }
 
 @media only screen and (max-width: 800px) {
   .w-100-r {

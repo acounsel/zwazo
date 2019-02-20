@@ -12,7 +12,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.views.generic import View, DetailView, ListView
-from django.views.generic.edit import CreateView, UpdateView, FormView
+from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
 
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
@@ -213,7 +213,6 @@ def goodbye(request):
 def save_response_from_request(request, question):
     # session_id = request.POST['MessageSid' if request.is_sms else 'CallSid']
     session_id = request.POST['CallSid']
-    print('ALL POSTED DATA BELOW =============================================={}'.format(request.POST))
     request_body = _extract_request_body(request, question.kind)
     phone_number = request.POST['To']
 
@@ -359,6 +358,10 @@ class QuestionUpdate(QuestionView, UpdateView):
 class QuestionSound(QuestionView, UpdateView):
     template_name = 'surveys/question_sound.html'
 
+class QuestionDelete(QuestionView, DeleteView):
+
+    def get_success_url(self):
+        return reverse_lazy('survey-detail', kwargs={'pk':self.kwargs['pk']})
 
 class ProjectView(LoginRequiredMixin, View):
     model = Project
@@ -492,6 +495,17 @@ class ContactImport(ProjectDetail):
     def import_contact_row(self, contact_dict):
         contact = Contact.objects.create(**contact_dict)
         return contact
+
+class ContactRemove(ContactDetail):
+
+    def get(self, request, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+        survey = Survey.objects.get(id=request.GET.get('survey'))
+        survey.respondents.remove(self.object)
+        messages.error(request, 'Contact removed from survey')
+        return redirect(reverse('survey-detail', kwargs={'pk':survey.id}))
+
 
 class QuestionResponseView(LoginRequiredMixin, View):
     model = QuestionResponse

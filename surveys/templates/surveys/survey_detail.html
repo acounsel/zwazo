@@ -10,8 +10,8 @@
 
 {% block card%}
 <div class="d-flex justify-content-between">
-  <div>
-    <p>Questions</p>
+  <div class="p-3">
+    <p class="lead">Questions</p>
     <a href="{% url 'question-create' pk=survey.id %}?project={{  project.id }}">Add Question</a>
     <table class="table">
       <thead>
@@ -28,14 +28,14 @@
           <td>{{ question.body }}</td> 
           <td>{{ question.get_kind_display }}</td>
           <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>
-          <td>x</td>
+          <td><a href="{% url 'question-delete' pk=question.survey.id question_pk=question.id%}">x</a></td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  <div>
-    <p>Sending To</p>
+  <div class="p-3">
+    <p class="lead">Sending To</p>
     <a href="{% url 'contact-create' %}?project={{ survey.project.id }}">Add Contact</a>
     <table class="table">
       <thead>
@@ -52,7 +52,7 @@
           <td>{{ contact.first_name }}</td> 
           <td>{{ contact.last_name }}</td>
           <td>{{ contact.phone }}</td>
-          <td>x</td>
+          <td><a href="{% url 'contact-remove' pk=contact.id %}?survey={{ survey.id }}">x</a></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -64,7 +64,7 @@
 <form method="POST" action="">
 
   {% csrf_token %}
-  <div>
+  <div class="p-3">
     <input type="submit" class="btn btn-primary" value="Send Survey">
   </div>
 

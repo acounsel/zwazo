@@ -1,8 +1,8 @@
 {% extends 'surveys/base_project.html' %}
 {% block tab_contact %}active{% endblock %}
-{% block project_card %}
+{% block card %}
   <p>Import Contacts</p>
-  <p>To import a list of contacts, download <a href="">this csv template</a> and add all contacts in the proper format, then upload it below.</p>
+  <p>To import a list of contacts, download <a href="https://s3-us-west-1.amazonaws.com/aconsole-static/media/public/import_contacts.csv" target="_blank">this csv template</a> and add all contacts in the proper format, then upload it below.</p>
   <form action="" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file" class="form-control-file mb-4" name="csv_file">

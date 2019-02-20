@@ -105,10 +105,12 @@ class Prompt(models.Model):
     NUMERIC = 'numeric'
     TEXT = 'text'
     YES_NO = 'yes_no'
+    WELCOME = 'welcome'
     CATEGORY_CHOICES = (
         (NUMERIC, 'Numeric'),
         (TEXT, 'Text'),
-        (YES_NO, 'Yes/No')
+        (YES_NO, 'Yes/No'),
+        (WELCOME, 'Welcome'),
     )
 
     name = models.CharField(max_length=255)
@@ -121,6 +123,15 @@ class Prompt(models.Model):
         return '%s' % self.name
 
 class Survey(models.Model):
+    VOICE = 'voice'
+    SMS = 'sms'
+    WHATSAPP = 'whatsapp'
+    SURVEY_CHOICES = (
+        (VOICE, 'Voice'),
+        (SMS, 'SMS'),
+        (WHATSAPP, 'WhatsApp'),
+    )
+
     DEFAULT = 'default'
     TEXT = 'text'
     SOUND = 'sound'
@@ -133,6 +144,7 @@ class Survey(models.Model):
     )
 
     name = models.CharField(max_length=255)
+    survey_type = models.CharField(max_length=30, choices=SURVEY_CHOICES, default=VOICE)
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, blank=True, null=True)
     prompt_type = models.CharField(max_length=50, choices=PROMPT_CHOICES, default=DEFAULT)

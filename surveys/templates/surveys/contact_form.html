@@ -25,7 +25,7 @@
         {% endfor %}
       </tbody>
     </table>
-    {% if project.contact_set %}
+    {% if project.contact_set.count > 0 %}
     <p class="text-right"><a href="{% url 'survey-create' %}?project={{ project.id }}" class="btn btn-primary btn-lg w-50 w-100-r text-white">Next Step >></a></p>
     {% endif %}
   </div>

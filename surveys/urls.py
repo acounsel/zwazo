@@ -27,6 +27,7 @@ urlpatterns = [
                     path('next/', views.run_question, name='question'),
                     path('update/', views.QuestionUpdate.as_view(), name='question-update'),
                     path('sound/', views.QuestionSound.as_view(), name='question-sound'),
+                    path('remove/', views.QuestionDelete.as_view(), name='question-delete'),
                 ])),
             ])),
         ])),
@@ -45,6 +46,7 @@ urlpatterns = [
         path('<int:pk>/', include([
             path('', views.ContactDetail.as_view(), name='contact-detail'),
             path('update/', views.ContactUpdate.as_view(), name='contact-update'),
+            path('remove/', views.ContactRemove.as_view(), name='contact-remove'),
         ])),
     ])),
     path('projects/', include([
