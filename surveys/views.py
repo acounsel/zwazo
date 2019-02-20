@@ -279,9 +279,34 @@ class SurveyPromptSound(SurveyDetail):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['formset'] = PromptFormSet(queryset=Prompt.objects.none())
+
+        context['formset'] = PromptFormSet(
+            queryset=Prompt.objects.none(),
+            initial=self.get_initial_categories(),
+        )
         return context
 
+    def get_initial_categories(self):
+        categories = []
+        for choice in Prompt.CATEGORY_CHOICES:
+            categories.append({'category': choice[0], 'language': self.object.language})
+        return categories
+
+    def post(self, request, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+        context['formset'] = PromptFormSet(
+                                        request.POST, 
+                                        request.FILES,
+                                        queryset=Prompt.objects.none(),
+                                        initial=self.get_initial_categories())
+        if context['formset'].is_valid():
+            context['formset'].save()
+            messages.success(request, 'Prompts successfuly added')
+            return redirect(reverse_lazy('question-create', kwargs = {'pk': self.object.id}))
+        print(context['formset'].errors)
+        messages.error(request, 'Please correct the errors below')
+        return self.render_to_response(context=context)
 
 class SurveyResponse(SurveyView, DetailView):
     template_name = 'surveys/survey_results.html'

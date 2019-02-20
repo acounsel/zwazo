@@ -1,12 +1,31 @@
 {% extends 'surveys/base_surveys.html' %}
+{% load crispy_forms_tags %}
 {% block tab_form %}active{% endblock %}
 {% block card %}
 <div class="d-flex flex-column flex-lg-row justify-content-between">
   <div class="w-50 w-100-r p-4 p-0-r">
-    <p cless="lead">Add Sound Files for Question Prompts</p>
-    {% for form in formset %}
-    {{ form.as_p }}
-    {% endfor %}
+    <p class="lead">Add Sound Files for Question Prompts</p>
+    <form method="POST" action="" novalidate enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ formset.management_form }}
+      {% for form in formset %}
+
+      <div class="Form card p-3 mb-3">
+        {{ form.id }}
+        {{ form.category }}
+        {{ form.language }}
+        <div class="FormField">
+        {{ form.name|as_crispy_field }}
+        </div>
+        <div class="FormField">
+        {{ form.sound_file|as_crispy_field }}
+        </div>
+
+
+      </div>
+      {% endfor %}
+      <input type="submit" class="btn btn-lg btn-primary w-50" value="Submit">
+    </form>
   </div>
   <div class="w-50 w-100-r p-4 p-0-r d-flex flex-column justify-content-between">
     Right Side Content Here
