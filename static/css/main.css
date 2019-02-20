@@ -114,6 +114,13 @@ html {
   #id_map rect:hover {
     fill:transparent;
   }
+  .FormField-NoBorder {
+    background-color: transparent;
+    border: none;
+    font-size: 1.2rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
 
 
 @media only screen and (max-width: 800px) {

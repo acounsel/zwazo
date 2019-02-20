@@ -26,4 +26,8 @@ class PromptForm(ModelForm):
         model = Prompt
         fields = ('name', 'category', 'sound_file')
 
-PromptFormSet = modelformset_factory(Prompt, fields=('name', 'category', 'sound_file'), extra=3)
+
+PromptFormSet = modelformset_factory(Prompt, 
+                                    fields=('category', 'name', 'language', 'sound_file'), 
+                                    widgets = {'category': forms.Select(attrs={'class': 'Selectize-Off FormField-NoBorder'}), 'language': forms.HiddenInput()},
+                                    extra=3)
