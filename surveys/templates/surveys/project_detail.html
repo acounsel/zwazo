@@ -1,6 +1,6 @@
 {% extends 'surveys/base_project.html' %}
 {% block tab_detail %}active{% endblock %}
-{% block project_card %}
+{% block card %}
   <p>Project Description: {{ project.description }}</p>
   <p>Country: {{ project.country }}</p>
   <p><strong>{{ project.survey_set.count }}</strong> Surveys Created</p>

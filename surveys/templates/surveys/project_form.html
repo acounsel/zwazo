@@ -1,5 +1,13 @@
 {% extends 'surveys/base_projects.html' %}
 {% block tab_form %}active{% endblock %}
-{% block project_card %}
-  {% include 'addins/form.html' %}
+{% block card %}
+<div class="d-flex flex-column flex-lg-row justify-content-between">
+  <div class="w-50 w-100-r p-4 p-0-r">
+    <p class="lead">Create new project</p>
+    {% include 'addins/form.html' %}
+  </div>
+  <div class="w-50 w-100-r p-4 p-0-r d-flex flex-column justify-content-between overflow-auto">
+   <p><strong>Projects</strong> house a set of surveys in a given country.</p>
+  </div>
+</div>
 {% endblock %}
