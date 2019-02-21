@@ -131,7 +131,6 @@ class Survey(models.Model):
         (SMS, 'SMS'),
         (WHATSAPP, 'WhatsApp'),
     )
-
     DEFAULT = 'default'
     TEXT = 'text'
     SOUND = 'sound'
@@ -148,6 +147,7 @@ class Survey(models.Model):
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, blank=True, null=True)
     prompt_type = models.CharField(max_length=50, choices=PROMPT_CHOICES, default=DEFAULT)
+    welcome_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='welcome_surveys')
     text_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='text_surveys')
     yes_no_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='yes_no_surveys')
     numeric_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='numeric_surveys')
@@ -175,6 +175,7 @@ class Survey(models.Model):
             return reverse('survey-prompt-sound', kwargs={'pk':self.id}) 
         else:
             return reverse('question-create', kwargs={'pk':self.id})
+
 
 class Question(models.Model):
     TEXT = 'text'
@@ -213,7 +214,8 @@ class Question(models.Model):
         return '%s' % self.body
 
     def get_prompt(self):
-        return getattr(self.survey, '{}_prompt'.format(self.kind.replace('-','_')))
+        prompt = getattr(self.survey, '{}_prompt'.format(self.kind.replace('-','_')))
+        return prompt.name
 
 class QuestionResponse(models.Model):
     response = models.CharField(max_length=255)

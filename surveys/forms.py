@@ -7,8 +7,9 @@ class SurveyForm(ModelForm):
 
     class Meta(object):
         model = Survey
-        fields = ('text_prompt', 'yes_no_prompt', 'numeric_prompt')
+        fields = ('welcome_prompt', 'text_prompt', 'yes_no_prompt', 'numeric_prompt')
         widgets = {
+            'welcome_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'welcome'}), 
             'text_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'text'}), 
             'yes_no_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'yes_no'}),
             'numeric_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'numeric'})

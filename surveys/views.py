@@ -109,10 +109,10 @@ def run_survey(request, pk):
         'question_pk': first_question.id
     }
     first_question_url = reverse('run-question', kwargs=first_question_id)
-    welcome = 'Hello and thank you for taking the %s survey' % survey.name
     twiml_response = VoiceResponse()
-    twiml_response.say(welcome)
-    logger.info(twiml_response)
+    if survey.welcome_prompt:
+        twiml_response.say(survey.welcome_prompt.name)
+    # logger.info(twiml_response)
     twiml_response.redirect(first_question_url, method='GET')
     messages.success(request, 'Survey Sent')
     return HttpResponse(twiml_response, content_type='application/xml')
@@ -130,7 +130,10 @@ def run_question(request, pk, question_pk):
             twiml_response.play(question.sound_file.url)
         else:
             twiml_response.say(question.body)
-        twiml_response.say(VOICE_INSTRUCTIONS[question.kind])
+        # if question.survey.prompt_type == Survey.DEFAULT:
+        #     twiml_response.say(VOICE_INSTRUCTIONS[question.kind])
+        # else:
+        twiml_response.say(question.get_prompt())
         twiml_response.record(
             action=action,
             method='POST',
@@ -144,7 +147,7 @@ def run_question(request, pk, question_pk):
             gather.play(question.sound_file.url)
         else:
             gather.say(question.body)
-        gather.say(VOICE_INSTRUCTIONS[question.kind])
+        gather.say(question.get_prompt())
         twiml_response.append(gather)
 
     request.session['answering_question_id'] = question.id
