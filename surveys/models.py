@@ -122,6 +122,12 @@ class Prompt(models.Model):
     def __str__(self):
         return '%s' % self.name
 
+    def get_twiml_data(self, prompt_type):
+        if prompt_type == Survey.SOUND:
+            return 'play', self.sound_file.url
+        else:
+            return 'say', self.name
+
 class Survey(models.Model):
     VOICE = 'voice'
     SMS = 'sms'
@@ -174,8 +180,14 @@ class Survey(models.Model):
         elif self.prompt_type == self.SOUND:
             return reverse('survey-prompt-sound', kwargs={'pk':self.id}) 
         else:
-            return reverse('question-create', kwargs={'pk':self.id})
+            self.add_prompts(prompts=Prompt.objects.filter(is_default=True))
+            return reverse('question-create', kwargs={'pk':self.id})  
 
+    def add_prompts(self, prompts):
+        for prompt in prompts:
+            setattr(self, '{}_prompt'.format(prompt.category), prompt)
+        self.save()
+        return self
 
 class Question(models.Model):
     TEXT = 'text'
@@ -215,12 +227,34 @@ class Question(models.Model):
 
     def get_prompt(self):
         prompt = getattr(self.survey, '{}_prompt'.format(self.kind.replace('-','_')))
-        return prompt.name
+        return prompt.get_twiml_data(self.survey.prompt_type)
+
+    def say_prompt(self, twiml):
+        verb, content = self.get_prompt()
+        getattr(twiml, verb)(content)
+        return twiml
+
+    def get_twiml_data(self):
+        if self.sound_file:
+            return 'play', self.sound_file.url
+        else:
+            return 'say', self.body
+
+    def say_question(self, twiml):
+        verb, content = self.get_twiml_data()
+        getattr(twiml, verb)(content)
+        return twiml
+
+    def say_question_and_prompt(self, twiml):
+        twiml = self.say_question(twiml)
+        twiml = self.say_prompt(twiml)
+        return twiml
 
 class QuestionResponse(models.Model):
     response = models.CharField(max_length=255)
     call_sid = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255)
+    contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     def __str__(self):

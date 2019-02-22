@@ -89,6 +89,7 @@ class SurveyDetail(SurveyView, DetailView):
                 reverse('run-survey', kwargs={'pk':survey.id})
             )
         )
+        request.session['contact_id'] = contact.id
         return True
 
     def sms_survey(self, request, contact):
@@ -124,16 +125,8 @@ def run_question(request, pk, question_pk):
     question = Question.objects.get(id=question_pk)
     twiml_response = VoiceResponse()
     action = save_response_url(question)
-    
     if question.kind == Question.TEXT:
-        if question.sound_file:
-            twiml_response.play(question.sound_file.url)
-        else:
-            twiml_response.say(question.body)
-        # if question.survey.prompt_type == Survey.DEFAULT:
-        #     twiml_response.say(VOICE_INSTRUCTIONS[question.kind])
-        # else:
-        twiml_response.say(question.get_prompt())
+        twiml_response = question.say_question_and_prompt(twiml_response)
         twiml_response.record(
             action=action,
             method='POST',
@@ -143,21 +136,11 @@ def run_question(request, pk, question_pk):
         )
     else:
         gather = Gather(action=action, method='POST')
-        if question.sound_file:
-            gather.play(question.sound_file.url)
-        else:
-            gather.say(question.body)
-        gather.say(question.get_prompt())
+        gather = question.say_question_and_prompt(gather)
         twiml_response.append(gather)
 
     request.session['answering_question_id'] = question.id
     return HttpResponse(twiml_response, content_type='application/xml')
-
-VOICE_INSTRUCTIONS = {
-    Question.TEXT: 'Please record your answer after the beep and then hit the pound sign',
-    Question.YES_NO: 'Please press the one key for yes and the zero key for no and then hit the pound sign',
-    Question.NUMERIC: 'Please press a number between 1 and 10 and then hit the pound sign'
-}
 
 def save_response_url(question):
     return reverse('save_response',
@@ -218,7 +201,6 @@ def save_response_from_request(request, question):
     session_id = request.POST['CallSid']
     request_body = _extract_request_body(request, question.kind)
     phone_number = request.POST['To']
-
     response = QuestionResponse.objects.filter(question_id=question.id,
                                                call_sid=session_id).first()
     if not response:
@@ -297,18 +279,25 @@ class SurveyPromptSound(SurveyDetail):
     def post(self, request, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
-        context['formset'] = PromptFormSet(
-                                        request.POST, 
-                                        request.FILES,
-                                        queryset=Prompt.objects.none(),
-                                        initial=self.get_initial_categories())
+        context['formset'] = self.get_formset(request)
         if context['formset'].is_valid():
-            context['formset'].save()
-            messages.success(request, 'Prompts successfuly added')
-            return redirect(reverse_lazy('question-create', kwargs = {'pk': self.object.id}))
-        print(context['formset'].errors)
+            survey = self.process_formset(request, context['formset'])
+            return redirect(reverse_lazy('question-create', kwargs = {'pk': survey.id}))
         messages.error(request, 'Please correct the errors below')
         return self.render_to_response(context=context)
+
+    def get_formset(self, request):
+        return PromptFormSet(
+                            request.POST, 
+                            request.FILES,
+                            queryset=Prompt.objects.none(),
+                            initial=self.get_initial_categories())
+
+    def process_formset(self, request, formset):
+        prompts = formset.save()
+        self.object.add_prompts(prompts)
+        messages.success(request, 'Prompts successfuly added')
+        return self.object
 
 class SurveyResponse(SurveyView, DetailView):
     template_name = 'surveys/survey_results.html'
