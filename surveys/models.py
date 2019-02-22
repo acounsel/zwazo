@@ -106,11 +106,13 @@ class Prompt(models.Model):
     TEXT = 'text'
     YES_NO = 'yes_no'
     WELCOME = 'welcome'
+    GOODBYE = 'goodbye'
     CATEGORY_CHOICES = (
         (NUMERIC, 'Numeric'),
         (TEXT, 'Text'),
         (YES_NO, 'Yes/No'),
         (WELCOME, 'Welcome'),
+        (GOODBYE, 'Goodbye'),
     )
 
     name = models.CharField(max_length=255)
@@ -157,6 +159,7 @@ class Survey(models.Model):
     text_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='text_surveys')
     yes_no_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='yes_no_surveys')
     numeric_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='numeric_surveys')
+    goodbye_prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, blank=True, null=True, related_name='goodbye_surveys')
     respondents = models.ManyToManyField(Contact, blank=True)
 
 
@@ -188,6 +191,16 @@ class Survey(models.Model):
             setattr(self, '{}_prompt'.format(prompt.category), prompt)
         self.save()
         return self
+
+    def get_prompt(self, kind):
+        prompt = getattr(self, '{}_prompt'.format(kind))
+        prompt = getattr(self, '{}_prompt'.format(self.kind.replace('-','_')))
+        return prompt.get_twiml_data(self.survey.prompt_type)
+
+    def say_prompt(self, twiml, kind):
+        verb, content = self.get_prompt(kind=kind)
+        getattr(twiml, verb)(content)
+        return twiml
 
 class Question(models.Model):
     TEXT = 'text'
@@ -225,15 +238,6 @@ class Question(models.Model):
     def __str__(self):
         return '%s' % self.body
 
-    def get_prompt(self):
-        prompt = getattr(self.survey, '{}_prompt'.format(self.kind.replace('-','_')))
-        return prompt.get_twiml_data(self.survey.prompt_type)
-
-    def say_prompt(self, twiml):
-        verb, content = self.get_prompt()
-        getattr(twiml, verb)(content)
-        return twiml
-
     def get_twiml_data(self):
         if self.sound_file:
             return 'play', self.sound_file.url
@@ -247,7 +251,7 @@ class Question(models.Model):
 
     def say_question_and_prompt(self, twiml):
         twiml = self.say_question(twiml)
-        twiml = self.say_prompt(twiml)
+        twiml = self.survey.say_prompt(twiml, self.kind)
         return twiml
 
 class QuestionResponse(models.Model):

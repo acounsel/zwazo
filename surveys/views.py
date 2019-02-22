@@ -111,8 +111,7 @@ def run_survey(request, pk):
     }
     first_question_url = reverse('run-question', kwargs=first_question_id)
     twiml_response = VoiceResponse()
-    if survey.welcome_prompt:
-        twiml_response.say(survey.welcome_prompt.name)
+    twiml_response = survey.say_prompt(twiml=twiml_response, kind='welcome')
     # logger.info(twiml_response)
     twiml_response.redirect(first_question_url, method='GET')
     messages.success(request, 'Survey Sent')
@@ -171,7 +170,7 @@ def save_response(request, pk, question_pk):
     save_response_from_request(request, question)
     next_question = question.next()
     if not next_question:
-        return goodbye(request)
+        return goodbye(request, question.survey)
     else:
         return next_question_redirect(next_question.id, pk)
 
@@ -182,16 +181,18 @@ def next_question_redirect(question_pk, pk):
     twiml_response.redirect(url=question_url, method='GET')
     return HttpResponse(twiml_response)
 
-def goodbye(request):
+def goodbye(request, survey):
     goodbye_messages = ['That was the last question',
                         'Thank you for taking this survey',
                         'Good-bye']
+    
     # if request.is_sms:
     #     response = MessagingResponse()
     #     [response.message(message) for message in goodbye_messages]
     # else:
     response = VoiceResponse()
-    [response.say(message) for message in goodbye_messages]
+    response = survey.say_prompt(twiml=response, kind='goodbye')
+    # [response.say(message) for message in goodbye_messages]
     response.hangup()
 
     return HttpResponse(response)
