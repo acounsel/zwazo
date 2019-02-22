@@ -81,6 +81,7 @@ class SurveyDetail(SurveyView, DetailView):
         )
 
     def voice_survey(self, request, contact, client, survey):
+        request.session['contact_id'] = contact.id
         call = client.calls.create(
             # machine_detection='Enable',
             to=contact.phone,
@@ -89,7 +90,6 @@ class SurveyDetail(SurveyView, DetailView):
                 reverse('run-survey', kwargs={'pk':survey.id})
             )
         )
-        request.session['contact_id'] = contact.id
         return True
 
     def sms_survey(self, request, contact):
@@ -182,10 +182,9 @@ def next_question_redirect(question_pk, pk):
     return HttpResponse(twiml_response)
 
 def goodbye(request, survey):
-    goodbye_messages = ['That was the last question',
-                        'Thank you for taking this survey',
-                        'Good-bye']
-    
+    # goodbye_messages = ['That was the last question',
+    #                     'Thank you for taking this survey',
+    #                     'Good-bye']
     # if request.is_sms:
     #     response = MessagingResponse()
     #     [response.message(message) for message in goodbye_messages]
@@ -199,6 +198,7 @@ def goodbye(request, survey):
 
 def save_response_from_request(request, question):
     # session_id = request.POST['MessageSid' if request.is_sms else 'CallSid']
+
     session_id = request.POST['CallSid']
     request_body = _extract_request_body(request, question.kind)
     phone_number = request.POST['To']
@@ -207,10 +207,14 @@ def save_response_from_request(request, question):
     if not response:
         QuestionResponse(call_sid=session_id,
                          phone_number=phone_number,
+                         contact=Contact.objects.filter(survey=question.survey, phone=phone_number)[0],
                          response=request_body,
                          question=question).save()
     else:
         response.response = request_body
+        response.save()
+    if 'TranscriptionText' in request.POST:
+        response.transcription = request.POST.get('TranscriptionText')
         response.save()
 
 def _extract_request_body(request, question_kind):
@@ -221,11 +225,10 @@ def _extract_request_body(request, question_kind):
     # elif question_kind in [Question.YES_NO, Question.NUMERIC]:
     if question_kind in [Question.YES_NO, Question.NUMERIC]:
         key = 'Digits'
-    elif 'TranscriptionText' in request.POST:
-        key = 'TranscriptionText'
+    # elif 'TranscriptionText' in request.POST:
+    #     key = 'TranscriptionText'
     else:
         key = 'RecordingUrl'
-
     return request.POST.get(key)
 
 class SurveyCreate(SurveyView, CreateView):

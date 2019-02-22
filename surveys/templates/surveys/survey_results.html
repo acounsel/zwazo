@@ -21,8 +21,12 @@
       <tr>
         <td>{{ response.question.body }}</td>
         <td>{{ response.question.get_kind_display }}</td>
+        {% if response.question.kind == 'text' %}
+        <td><a href="{{ response.response }}">{% if response.transcription %}{{ response.transcription }}{% else %}Recording Link{% endif %}</a></td>
+        {% else %}
         <td>{{ response.response }}</td>
-        <td>{{ response.call_sid }}</td>
+        {% endif %}
+        <td>{{ response.contact }}</td>
         <td>{{ response.phone_number }}</td>
       </tr>
       {% endfor %}

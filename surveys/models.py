@@ -24,14 +24,16 @@ class LanguageManager(models.Manager):
             reader = csv.DictReader(csvfile)
             iterator = 0
             for row in reader:
-                self.create(name=row['Name'])
-                iterator += 1
+                if row['Code']:
+                    self.create(name=row['Name'], code=row['Code'])
+                    iterator += 1
         return iterator
 
 class Language(models.Model):
     objects = LanguageManager()
 
     name = models.CharField(max_length=255)
+    code = models.CharField(max_length=5, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -95,6 +97,9 @@ class Contact(models.Model):
     email = models.CharField(max_length=255, blank=True)
     has_consented = models.BooleanField(default=False)
 
+    class Meta(object):
+        unique_together = (('project', 'phone'),)
+
     def __str__(self):
         return '{0} {1}'.format(self.first_name, self.last_name)
 
@@ -126,9 +131,15 @@ class Prompt(models.Model):
 
     def get_twiml_data(self, prompt_type):
         if prompt_type == Survey.SOUND:
-            return 'play', self.sound_file.url
+            verb, args, kwargs = 'play', (self.sound_file.url,), None
         else:
-            return 'say', self.name
+            verb = 'say'
+            args = (self.name,)
+            kwargs = {
+                'voice': 'alice',
+                'language': self.language.code,
+            }
+        return verb, args, kwargs
 
 class Survey(models.Model):
     VOICE = 'voice'
@@ -194,17 +205,17 @@ class Survey(models.Model):
 
     def get_prompt(self, kind):
         prompt = getattr(self, '{}_prompt'.format(kind))
-        prompt = getattr(self, '{}_prompt'.format(self.kind.replace('-','_')))
-        return prompt.get_twiml_data(self.survey.prompt_type)
+        # prompt = getattr(self, '{}_prompt'.format(self.kind.replace('-','_')))
+        return prompt.get_twiml_data(self.prompt_type)
 
     def say_prompt(self, twiml, kind):
-        verb, content = self.get_prompt(kind=kind)
-        getattr(twiml, verb)(content)
+        verb, args, kwargs = self.get_prompt(kind=kind)
+        getattr(twiml, verb)(*args, **kwargs)
         return twiml
 
 class Question(models.Model):
     TEXT = 'text'
-    YES_NO = 'yes-no'
+    YES_NO = 'yes_no'
     NUMERIC = 'numeric'
 
     QUESTION_KIND_CHOICES = (
@@ -240,13 +251,19 @@ class Question(models.Model):
 
     def get_twiml_data(self):
         if self.sound_file:
-            return 'play', self.sound_file.url
+            verb, args, kwargs = 'play', (self.sound_file.url,), None
         else:
-            return 'say', self.body
+            verb = 'say'
+            args = (self.body,)
+            kwargs = {
+                'voice': 'alice',
+                'language': self.survey.language.code,
+            }
+        return verb, args, kwargs
 
     def say_question(self, twiml):
-        verb, content = self.get_twiml_data()
-        getattr(twiml, verb)(content)
+        verb, args, kwargs = self.get_twiml_data()
+        getattr(twiml, verb)(*args, **kwargs)
         return twiml
 
     def say_question_and_prompt(self, twiml):
@@ -256,6 +273,7 @@ class Question(models.Model):
 
 class QuestionResponse(models.Model):
     response = models.CharField(max_length=255)
+    transcription = models.TextField(blank=True)
     call_sid = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255)
     contact = models.ForeignKey(Contact, on_delete=models.SET_NULL, blank=True, null=True)

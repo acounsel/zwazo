@@ -12,7 +12,8 @@ class SurveyForm(ModelForm):
             'welcome_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'welcome'}), 
             'text_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'text'}), 
             'yes_no_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'yes_no'}),
-            'numeric_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'numeric'})
+            'numeric_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'numeric'}),
+            'goodbye_prompt': forms.Select(attrs={'class': 'SelectizeCreate', 'category':'goodbye'}),
         }
 
     def __init__(self, *args, **kwargs):
