@@ -28,12 +28,17 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'survey-create' %}?project={{ project.id }}">Add Survey</a>
         </li>
+        {% if survey.responses %}
+        <li class="nav-item">
+          <a class="nav-link {% block tab_responses %}{% endblock %}" href="{% url 'survey-response' pk=survey.id %}">Survey Results</a>
+        </li>
+        {% endif %}
       </ul>
     </div>
     <div class="card-body">
       <h5 class="card-title">Contacts</h5>
       <div class="text-left">
-      {% block contact_card %}
+      {% block card %}
       {% endblock %}
       </div>
     </div>

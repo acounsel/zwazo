@@ -1,0 +1,46 @@
+{% extends 'surveys/base_contact.html' %}
+{% block tab_responses %}active{% endblock %}
+{% block card %}
+<div class="d-flex justify-content-between">
+  <div class="p-3">
+    <p class="lead">{{ contact.first_name }} {{ contact.last_name }}</p>
+    <a href="{% url 'contact-update' pk=contact.id %}">Edit Contact</a>
+    <div class="card p-3 mt-4">
+      <p>Phone: {{ contact.phone }}</p>
+      <p>Email: {{ contact.email }}</p>
+      <p>Surveys Completed: {{ contact.get_survey_count }}</p>
+      <p>Included in: </p>
+      <ul>
+      {% for survey in contact.survey_set.all %}
+        <li><a href="{% url 'survey-detail' pk=survey.id %}">{{ survey.name }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="p-3 w-50">
+    {% if survey %}
+    <p class="lead"><a href="{% url 'survey-detail' pk=survey.id %}">{{ survey.name }}</a></p>
+    <a href="{% url 'survey-list' %}?project={{ survey.project.id }}">See all surveys</a>
+    <table class="table card p-3 w-100">
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th>Type</th>
+          <th>Response</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for response in responses %}
+        <tr>
+          <td>{{ response.question.body }}</td> 
+          <td>{{ response.question.kind }}</td>
+          <td>{{ response.response }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

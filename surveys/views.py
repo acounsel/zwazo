@@ -65,6 +65,12 @@ class Home(ListView):
 
 class SurveyDetail(SurveyView, DetailView):
 
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        context = super().get_context_data(**kwargs)
+        context['project'] = self.object.project
+        return context
+
     def post(self, request, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
@@ -305,6 +311,12 @@ class SurveyPromptSound(SurveyDetail):
 
 class SurveyResponse(SurveyView, DetailView):
     template_name = 'surveys/survey_results.html'
+
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        context = super().get_context_data(**kwargs)
+        context['project'] = self.object.project
+        return context
     
 class QuestionView(LoginRequiredMixin, View):
     model = Question
@@ -401,7 +413,14 @@ class ContactList(ContactView, ListView):
     pass
 
 class ContactDetail(ContactView, DetailView):
-    pass
+    
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        context = super().get_context_data(**kwargs)
+        if self.request.GET.get('survey'):
+            context['survey'] = Survey.objects.get(id=self.request.GET.get('survey'))
+            context['responses'] = QuestionResponse.objects.filter(question__survey=context['survey'], contact=self.object)
+        return context
 
 class ContactCreate(ContactView, CreateView):
 

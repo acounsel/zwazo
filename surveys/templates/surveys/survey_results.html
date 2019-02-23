@@ -26,7 +26,7 @@
         {% else %}
         <td>{{ response.response }}</td>
         {% endif %}
-        <td>{{ response.contact }}</td>
+        <td><a href="{% url 'contact-detail' pk=response.contact.id %}?survey={{ survey.id }}">{{ response.contact }}</a></td>
         <td>{{ response.phone_number }}</td>
       </tr>
       {% endfor %}

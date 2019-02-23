@@ -131,7 +131,7 @@ class Prompt(models.Model):
 
     def get_twiml_data(self, prompt_type):
         if prompt_type == Survey.SOUND:
-            verb, args, kwargs = 'play', (self.sound_file.url,), None
+            verb, args, kwargs = 'play', (self.sound_file.url,), {}
         else:
             verb = 'say'
             args = (self.name,)
@@ -251,7 +251,7 @@ class Question(models.Model):
 
     def get_twiml_data(self):
         if self.sound_file:
-            verb, args, kwargs = 'play', (self.sound_file.url,), None
+            verb, args, kwargs = 'play', (self.sound_file.url,), {}
         else:
             verb = 'say'
             args = (self.body,)
