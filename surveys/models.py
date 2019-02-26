@@ -72,12 +72,31 @@ class Country(models.Model):
     def get_project_url(self, *args, **kwargs):
         return reverse('project-create') + '?country={}'.format(self.id)
 
+class ProjectManager(models.Manager):
+    
+    def get_function_fields(self):
+        return ('voice', 'sms', 'email', 'whatsapp')
+
 class Project(models.Model):
+    objects = ProjectManager()
+
+    NONE = 'none'
+    ONEWAY = 'oneway'
+    TWOWAY = 'twoway'
+    FEATURE_CHOICES = (
+        (NONE, 'None'),
+        (ONEWAY, 'One-Way'),
+        (TWOWAY, 'Two-Way'),
+    )
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True)
+    voice = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
+    sms = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
+    email = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
+    whatsapp = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
 
     def __str__(self):
         return self.name

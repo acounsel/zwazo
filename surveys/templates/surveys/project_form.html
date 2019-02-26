@@ -1,46 +1,141 @@
 {% extends 'surveys/base_projects.html' %}
+{% load crispy_forms_tags %}
 {% block tab_form %}active{% endblock %}
 {% block card %}
-<div class="d-flex flex-column flex-lg-row justify-content-between">
+  <form method="POST" action="{{ form_action }}" novalidate enctype="multipart/form-data" class="d-flex flex-column flex-lg-row justify-content-between">
   <div class="w-50 w-100-r p-4 p-0-r">
     <p class="lead">Create new project</p>
-    {% include 'addins/form.html' %}
+
+    
+      {% csrf_token %}
+      {% for field in form %}
+        {{ field|as_crispy_field }}
+        {% if field.errors %}
+        <div class="error">{{ field.errors }}</div>
+        {% endif %}
+      {% endfor %}
+      <input class="btn btn-primary btn-lg mt-3 w-50 w-100-r" type="submit" value="Submit">
   </div>
   <div class="w-50 w-100-r p-4 p-0-r d-flex flex-column overflow-auto">
     <!-- <p class="lead">Project functions</p> -->
-    <p class="mt-5">Functions</p>
-    <div class="d-flex justify-content-between px-3">
-      <label class="CheckboxIcon p-3">
+    <p class="mt-5">Choose Project Functions</p>
+    <div class="d-flex justify-content-between mb-3">
+      <label class="CheckboxIcon px-1 py-2 selected None">
         <div class="d-flex flex-column text-center align-items-center">
-          <input type="checkbox"> 
-          <i class="Icon fas fa-phone fa-5x checked mb-3"></i>
-          <span class="IconText">Phone Surveys</span>
+          <input type="checkbox" class="Checkbox" name="voice" value="none" checked>
+          <i class="Icon fas fa-phone-slash fa-3x checked mb-3"></i>
+          <span class="IconText">No Voice</span>
         </div>
       </label>
-      <label class="CheckboxIcon p-3">
+      <label class="CheckboxIcon px-1 py-2 One">
         <div class="d-flex flex-column text-center align-items-center">
-          <input type="checkbox"> 
-          <i class="Icon fas fa-comments fa-5x checked mb-3"></i>
-          <span class="IconText">SMS Surveys</span>
+          <input type="checkbox" class="Checkbox" name="voice" value="oneway"> 
+          <i class="Icon fas fa-phone fa-3x checked mb-3"></i>
+          <span class="IconText">Voice (One-Way)</span>
+        </div>
+      </label>
+      <label class="CheckboxIcon px-1 py-2 Two">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="voice" value="twoway"> 
+            <span class="checked">
+              <i class="Icon fas fa-phone fa-3x fa-flip-horizontal checked mb-3"></i>
+              <i class="Icon fas fa-phone fa-3x checked mb-3"></i>
+            </span>
+            
+          <span class="IconText">Voice (Two-Way)</span>
         </div>
       </label>
     </div>
-    <div class="d-flex justify-content-between p-3 mt-3">
-      <label class="CheckboxIcon p-3">
+    <div class="d-flex justify-content-between mb-3">
+      <label class="CheckboxIcon px-1 py-2 selected">
         <div class="d-flex flex-column text-center align-items-center">
-          <input type="checkbox"> 
-          <i class="Icon fas fa-bell fa-5x checked mb-3"></i>
-          <span class="IconText">Alerts</span>
+          <input type="checkbox" class="Checkbox" name="sms" value="none" checked> 
+          <i class="Icon fas fa-comment-slash fa-3x checked mb-3"></i>
+          <span class="IconText">No SMS</span>
         </div>
       </label>
-      <label class="CheckboxIcon p-3">
+      <label class="CheckboxIcon px-1 py-2">
         <div class="d-flex flex-column text-center align-items-center">
-          <input type="checkbox"> 
-          <i class="Icon fab fa-whatsapp fa-5x checked mb-3"></i>
-          <span class="IconText">WhatsApp</span>
+          <input type="checkbox" class="Checkbox" name="sms" value="oneway" > 
+          <i class="Icon fas fa-comment fa-3x checked mb-3"></i>
+          <span class="IconText">SMS (One-Way)</span>
+        </div>
+      </label>
+      <label class="CheckboxIcon px-1 py-2">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="sms" value="twoway" > 
+          <i class="Icon fas fa-comments fa-3x checked mb-3"></i>
+          <span class="IconText">SMS (Two-Way)</span>
+        </div>
+      </label>
+    </div>
+    <div class="d-flex justify-content-between mb-3">
+      <label class="CheckboxIcon px-1 py-2 selected">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="email" value="none" checked> 
+          <i class="Icon far fa-envelope fa-3x checked mb-3"></i>
+          <span class="IconText">No Email</span>
+        </div>
+      </label>
+      <label class="CheckboxIcon px-1 py-2">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="email" value="oneway"> 
+          <i class="Icon far fa-envelope-open fa-3x checked mb-3"></i>
+          <span class="IconText">Email (One-Way)</span>
+        </div>
+      </label>
+      <label class="CheckboxIcon px-1 py-2">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="email" value="twoway"> 
+          <i class="Icon fas fa-mail-bulk fa-3x checked mb-3"></i>
+          <span class="IconText">Email (Two-Way)</span>
+        </div>
+      </label>
+    </div>
+    <div class="d-flex justify-content-between">
+      <label class="CheckboxIcon px-1 py-2 selected">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="whatsapp" value="none" checked> 
+          <i class="Icon fas fa-comment-slash fa-3x checked mb-3"></i>
+          <span class="IconText">No WhatsApp</span>
+        </div>
+      </label>
+      <label class="CheckboxIcon px-1 py-2">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="whatsapp" value="oneway"> 
+          <i class="Icon fab fa-whatsapp fa-3x checked mb-3"></i>
+          <span class="IconText">WhatsApp (One-Way)</span>
+        </div>
+      </label>
+      <label class="CheckboxIcon px-1 py-2">
+        <div class="d-flex flex-column text-center align-items-center">
+          <input type="checkbox" class="Checkbox" name="whatsapp" value="twoway"> 
+          <span class="checked">
+              <i class="Icon fab fa-whatsapp fa-3x checked mb-3"></i>
+              <i class="Icon fab fa-whatsapp fa-3x fa-flip-horizontal checked mb-3"></i>
+          </span>
+          
+          <span class="IconText">WhatsApp (Two-Way)</span>
         </div>
       </label>
     </div>
   </div>
-</div>
+  </form>
+
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript">
+    $( '.CheckboxIcon' ).click(function() {
+      $( this ).addClass( 'selected' );
+      $( this ).find( '.Checkbox' ).prop('checked', true);
+      $( this ).siblings().removeClass( 'selected' );
+      $( this ).siblings().find( '.Checkbox' ).prop('checked', false);
+      // $( this ).siblings().each(function() {
+      //   $( this ).find( '.Checkbox' ).prop('checked', false);
+      //   console.log($( this ));
+      // });
+     
+    });
+  </script>
 {% endblock %}

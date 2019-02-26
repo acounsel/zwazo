@@ -383,7 +383,8 @@ class ProjectDetail(ProjectView, DetailView):
 
 class ProjectCreate(ProjectView, CreateView):
 
-    def get_success_url(self, **kwargs):         
+    def get_success_url(self, **kwargs):
+        print(self.request.POST)     
         return reverse_lazy('contact-add', args = (self.object.slug,))
 
     def get_initial(self):
@@ -392,6 +393,12 @@ class ProjectCreate(ProjectView, CreateView):
         if self.request.GET.get('country'):
             initial['country'] = Country.objects.get(id=self.request.GET.get('country'))
         return initial.copy()
+
+    def form_valid(self, form):
+        for field in Project.objects.get_function_fields():
+            setattr(form.instance, field, self.request.POST.get(field))
+        form.instance.save()
+        return super().form_valid(form)
 
 class ProjectUpdate(ProjectView, UpdateView):
     pass

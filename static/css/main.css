@@ -125,10 +125,11 @@ html {
     border: 2px solid #ced4da;
     border-radius: 8px;
     cursor: pointer;
-    width: 42%;
+    width: 31%;
     transition: all 0.2s ease-in-out
   }
-  .CheckboxIcon:hover {
+
+  .CheckboxIcon:hover, .CheckboxIcon.selected  {
     border: 2px solid #FF69B4;
   }
   .CheckboxIcon input[type="checkbox"] {
@@ -143,7 +144,8 @@ html {
   .CheckboxIcon input[type="checkbox"]:checked {
     border-color: #FF69B4;
   }
-  .CheckboxIcon input[type="checkbox"]:checked ~ .checked {
+  .CheckboxIcon input[type="checkbox"]:checked ~ .checked,
+  .CheckboxIcon input[type="checkbox"]:checked ~ .checked .Icon {
     display: inline-block;
     color: #FF69B4;
   }
