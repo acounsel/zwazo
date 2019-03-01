@@ -80,11 +80,11 @@ class ProjectManager(models.Manager):
 class Project(models.Model):
     objects = ProjectManager()
 
-    NONE = 'none'
+    OFF = 'off'
     ONEWAY = 'oneway'
     TWOWAY = 'twoway'
     FEATURE_CHOICES = (
-        (NONE, 'None'),
+        (OFF, 'None'),
         (ONEWAY, 'One-Way'),
         (TWOWAY, 'Two-Way'),
     )
@@ -93,10 +93,10 @@ class Project(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True)
-    voice = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
-    sms = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
-    email = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
-    whatsapp = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=NONE)
+    voice = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=OFF)
+    sms = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=OFF)
+    email = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=OFF)
+    whatsapp = models.CharField(max_length=20, choices=FEATURE_CHOICES, default=OFF)
 
     def __str__(self):
         return self.name

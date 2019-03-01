@@ -135,12 +135,12 @@ def run_question(request, pk, question_pk):
         twiml_response.record(
             action=action,
             method='POST',
-            max_length=6,
+            max_length=10,
             transcribe=True,
             transcribe_callback=action
         )
     else:
-        gather = Gather(action=action, method='POST')
+        gather = Gather(action=action, method='POST', numDigits=1)
         gather = question.say_question_and_prompt(gather)
         twiml_response.append(gather)
 
