@@ -131,14 +131,17 @@ def run_question(request, pk, question_pk):
     twiml_response = VoiceResponse()
     action = save_response_url(question)
     if question.kind == Question.TEXT:
+        print('do we get here?????????')
         twiml_response = question.say_question_and_prompt(twiml_response)
         twiml_response.record(
             action=action,
             method='POST',
             max_length=10,
+            timeout=4,
             transcribe=True,
             transcribe_callback=action
         )
+        print('TWIML BRAH: {}'.format(twiml_response))
     else:
         gather = Gather(action=action, method='POST', numDigits=question.max_length)
         gather = question.say_question_and_prompt(gather)

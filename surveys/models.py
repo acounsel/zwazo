@@ -258,13 +258,13 @@ class Question(models.Model):
         if kind not in [cls.YES_NO, cls.NUMERIC, cls.TEXT]:
             raise ValidationError("Invalid question type")
 
-    def next(self, response):
-        if response.is_repeater():
-            return self
-        elif response.is_terminator():
-            return None
-        else:
-            next_questions = self.get_next_questions()
+    def next(self, response=None):
+        if response:
+            if response.is_repeater():
+                return self
+            elif response.is_terminator():
+                return None
+        next_questions = self.get_next_questions()
 
         return next_questions[0] if next_questions else None
 
