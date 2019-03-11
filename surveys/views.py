@@ -322,7 +322,7 @@ class SurveyResponse(SurveyView, DetailView):
     
 class QuestionView(LoginRequiredMixin, View):
     model = Question
-    fields = ('body', 'kind', 'sound_file', 'repeater', 'terminator')
+    fields = ('body', 'kind', 'sound_file', 'repeater', 'terminator', 'has_prompt')
 
     def get_object(self, queryset=None):
         obj = Question.objects.get(id=self.kwargs['question_pk'])

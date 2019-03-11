@@ -251,6 +251,7 @@ class Question(models.Model):
     repeater = models.CharField(max_length=2, blank=True)
     terminator = models.CharField(max_length=2, blank=True)
     max_length = models.IntegerField(default=1)
+    has_prompt = models.BooleanField(default=True)
 
     @classmethod
     def validate_kind(cls, kind):
@@ -298,7 +299,8 @@ class Question(models.Model):
 
     def say_question_and_prompt(self, twiml):
         twiml = self.say_question(twiml)
-        twiml = self.survey.say_prompt(twiml, self.kind)
+        if self.has_prompt:
+            twiml = self.survey.say_prompt(twiml, self.kind)
         return twiml
 
 class QuestionResponse(models.Model):
