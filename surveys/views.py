@@ -140,7 +140,7 @@ def run_question(request, pk, question_pk):
             transcribe_callback=action
         )
     else:
-        gather = Gather(action=action, method='POST', numDigits=1)
+        gather = Gather(action=action, method='POST', numDigits=question.max_length)
         gather = question.say_question_and_prompt(gather)
         twiml_response.append(gather)
 
@@ -173,8 +173,8 @@ def redirects_twilio_request_to_proper_endpoint(request):
 @validate_twilio_request
 def save_response(request, pk, question_pk):
     question = Question.objects.get(id=question_pk)
-    save_response_from_request(request, question)
-    next_question = question.next()
+    response = save_response_from_request(request, question)
+    next_question = question.next(response)
     if not next_question:
         return goodbye(request, question.survey)
     else:
@@ -211,17 +211,19 @@ def save_response_from_request(request, question):
     response = QuestionResponse.objects.filter(question_id=question.id,
                                                call_sid=session_id).first()
     if not response:
-        QuestionResponse(call_sid=session_id,
+        response = QuestionResponse(call_sid=session_id,
                          phone_number=phone_number,
                          contact=Contact.objects.filter(survey=question.survey, phone=phone_number)[0],
                          response=request_body,
-                         question=question).save()
+                         question=question)
+        response.save()
     else:
         response.response = request_body
         response.save()
     if 'TranscriptionText' in request.POST:
         response.transcription = request.POST.get('TranscriptionText')
         response.save()
+    return response
 
 def _extract_request_body(request, question_kind):
     Question.validate_kind(question_kind)
@@ -320,7 +322,7 @@ class SurveyResponse(SurveyView, DetailView):
     
 class QuestionView(LoginRequiredMixin, View):
     model = Question
-    fields = ('body', 'kind', 'sound_file')
+    fields = ('body', 'kind', 'sound_file', 'repeater', 'terminator')
 
     def get_object(self, queryset=None):
         obj = Question.objects.get(id=self.kwargs['question_pk'])

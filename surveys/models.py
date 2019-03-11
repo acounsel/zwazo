@@ -248,19 +248,30 @@ class Question(models.Model):
     sound = models.CharField(max_length=255, blank=True)
     sound_file = models.FileField(storage=PrivateMediaStorage(), upload_to='files/', blank=True, null=True)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    repeater = models.CharField(max_length=2, blank=True)
+    terminator = models.CharField(max_length=2, blank=True)
+    max_length = models.IntegerField(default=1)
 
     @classmethod
     def validate_kind(cls, kind):
         if kind not in [cls.YES_NO, cls.NUMERIC, cls.TEXT]:
             raise ValidationError("Invalid question type")
 
-    def next(self):
-        survey = Survey.objects.get(id=self.survey_id)
-
-        next_questions = \
-            survey.question_set.order_by('id').filter(id__gt=self.id)
+    def next(self, response):
+        if response.is_repeater():
+            return self
+        elif response.is_terminator():
+            return None
+        else:
+            next_questions = self.get_next_questions()
 
         return next_questions[0] if next_questions else None
+
+    def get_next_questions(self):
+        survey = Survey.objects.get(id=self.survey_id)
+        next_questions = \
+            survey.question_set.order_by('id').filter(id__gt=self.id)
+        return next_questions
 
     def get_responses(self):
         return self.questionresponse_set.values('response').order_by('response').annotate(Count('response'))
@@ -309,4 +320,16 @@ class QuestionResponse(models.Model):
                 'call_sid': self.call_sid,
                 'phone_number': self.phone_number,
                 }
+
+    def is_repeater(self):
+        if self.question.repeater:
+            if self.response == self.question.repeater:
+                return True
+        return False
+
+    def is_terminator(self):
+        if self.question.terminator:
+            if self.response == self.question.terminator:
+                return True
+        return False
 
