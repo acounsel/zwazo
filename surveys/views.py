@@ -131,7 +131,6 @@ def run_question(request, pk, question_pk):
     twiml_response = VoiceResponse()
     action = save_response_url(question)
     if question.kind == Question.TEXT:
-        print('do we get here?????????')
         twiml_response = question.say_question_and_prompt(twiml_response)
         twiml_response.record(
             action=action,
@@ -141,11 +140,11 @@ def run_question(request, pk, question_pk):
             transcribe=True,
             transcribe_callback=action
         )
-        print('TWIML BRAH: {}'.format(twiml_response))
     else:
-        gather = Gather(action=action, method='POST', numDigits=question.max_length)
+        gather = Gather(action=action, method='POST', numDigits=question.max_length, timeout=question.timeout)
         gather = question.say_question_and_prompt(gather)
         twiml_response.append(gather)
+        twiml_response.redirect(action, method='POST')
 
     request.session['answering_question_id'] = question.id
     return HttpResponse(twiml_response, content_type='application/xml')
@@ -207,7 +206,6 @@ def goodbye(request, survey):
 
 def save_response_from_request(request, question):
     # session_id = request.POST['MessageSid' if request.is_sms else 'CallSid']
-
     session_id = request.POST['CallSid']
     request_body = _extract_request_body(request, question.kind)
     phone_number = request.POST['To']
@@ -240,7 +238,10 @@ def _extract_request_body(request, question_kind):
     #     key = 'TranscriptionText'
     else:
         key = 'RecordingUrl'
-    return request.POST.get(key)
+    if request.POST.get(key):
+        return request.POST.get(key)
+    else:
+        return 'No Response'
 
 class SurveyCreate(SurveyView, CreateView):
 

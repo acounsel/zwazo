@@ -240,7 +240,7 @@ class Question(models.Model):
     QUESTION_KIND_CHOICES = (
         (TEXT, 'Text'),
         (YES_NO, 'Yes or no'),
-        (NUMERIC, 'Numeric')
+        (NUMERIC, 'Numeric'),
     )
 
     body = models.CharField(max_length=255)
@@ -251,6 +251,7 @@ class Question(models.Model):
     repeater = models.CharField(max_length=2, blank=True)
     terminator = models.CharField(max_length=2, blank=True)
     max_length = models.IntegerField(default=1)
+    timeout = models.IntegerField(default=5)
     has_prompt = models.BooleanField(default=True)
 
     @classmethod
