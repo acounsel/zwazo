@@ -1,0 +1,24 @@
+{% extends 'surveys/base.html' %}
+
+{% block content %}
+<table class="table table-hover table-bordered">
+  <thead>
+    <tr>
+      <th>Survey</th>
+      <th>Question</th>
+      <th>Kind</th>
+      <th>Sound</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for question in question_list %}
+    <tr>
+      <td>{{ question.survey }}</td>
+      <td>{{ question.body }}</td> 
+      <td>{{ question.get_kind_display }}</td>
+      <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

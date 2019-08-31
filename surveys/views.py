@@ -21,13 +21,15 @@ from twilio.twiml.voice_response import Gather, Dial, VoiceResponse, Say
 from .forms import SurveyForm, PromptFormSet
 from .models import Language, Country, Project, Contact, Prompt
 from .models import Survey, Question, QuestionResponse
+from broadcasts.models import Broadcast
 from .decorators import validate_twilio_request
+from base_site.views import ContactDetail, ContactView
 
 logger = logging.getLogger(__name__)
 
 class SurveyView(LoginRequiredMixin, View):
     model = Survey
-    fields = ('name', 'language', 'prompt_type')
+    fields = ('name', 'language', 'prompt_type', 'is_callback')
 
     def get_success_url(self, **kwargs):
         return self.object.get_prompt_url()
@@ -59,16 +61,13 @@ class SurveyList(SurveyView, ListView):
             queryset = queryset.filter(project=Project.objects.get(id=self.request.GET.get('project')))
         return queryset
 
-class Home(ListView):
-    model = Country
-    template_name = 'surveys/home.html'
-
 class SurveyDetail(SurveyView, DetailView):
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
         context = super().get_context_data(**kwargs)
         context['project'] = self.object.project
+        print(context)
         return context
 
     def post(self, request, **kwargs):
@@ -105,6 +104,24 @@ class SurveyDetail(SurveyView, DetailView):
             to=contact
         )
         return True
+
+class SurveyContactUpdate(SurveyView, UpdateView, ContactView):
+    fields = ('respondents',)
+    template_name_suffix = '_manage_contacts'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contact'] = Contact.objects.filter(project=self.object.project)
+        return context
+
+    def get_form(self, form_class=None):    
+        form = super(SurveyContactUpdate, self).get_form(form_class)
+        form.fields["respondents"].queryset = Contact.objects.filter(project=self.request.GET.get('project'))
+        return form
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('survey-detail', args = (self.object.id,))
+
 
 @csrf_exempt
 @validate_twilio_request
@@ -243,8 +260,17 @@ def _extract_request_body(request, question_kind):
     else:
         return 'No Response'
 
-class SurveyCreate(SurveyView, CreateView):
+def remove_callbacks():
+    callback_surveys = Survey.objects.filter(is_callback=True)
+    for survey in callback_surveys:
+        survey.is_callback = False
+        survey.save()
+    callback_broadcasts = Broadcast.objects.filter(is_callback=True)
+    for broadcast in callback_broadcasts:
+        broadcast.is_callback = False
+        broadcast.save()  
 
+class SurveyCreate(SurveyView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['setup_percent'] = 50
@@ -256,10 +282,27 @@ class SurveyCreate(SurveyView, CreateView):
             form.instance.save()
             for contact in form.instance.project.contact_set.all():
                 form.instance.respondents.add(contact)
+        if form.instance.is_callback:
+            remove_callbacks()
         return super().form_valid(form)
 
 class SurveyUpdate(SurveyView, UpdateView):
-    pass
+    fields = ('name', 'language', 'prompt_type', 'is_callback')    
+    template_name_suffix = '_update_form'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = context['survey'].project
+        return context
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('survey-list') + '?project={}'.format(self.object.project.id)
+
+    def form_valid(self, form):
+        if form.instance.is_callback:
+            remove_callbacks()
+        return super().form_valid(form)
+
 
 class SurveyPrompts(SurveyUpdate):
     fields = None
@@ -323,7 +366,12 @@ class SurveyResponse(SurveyView, DetailView):
         context = super().get_context_data(**kwargs)
         context['project'] = self.object.project
         return context
-    
+
+class SurveyDelete(SurveyView, DeleteView):
+
+    def get_success_url(self):
+        return reverse_lazy('survey-list') + '?project={}'.format(self.object.project.id)
+
 class QuestionView(LoginRequiredMixin, View):
     model = Question
     fields = ('body', 'kind', 'sound_file', 'repeater', 'terminator', 'has_prompt')
@@ -377,164 +425,6 @@ class QuestionDelete(QuestionView, DeleteView):
     def get_success_url(self):
         return reverse_lazy('survey-detail', kwargs={'pk':self.kwargs['pk']})
 
-class ProjectView(LoginRequiredMixin, View):
-    model = Project
-    fields = ('name', 'country', 'description')
-
-class ProjectList(ProjectView, ListView):
-    pass
-
-class ProjectDetail(ProjectView, DetailView):
-    pass
-
-class ProjectCreate(ProjectView, CreateView):
-
-    def get_success_url(self, **kwargs):
-        print(self.request.POST)     
-        return reverse_lazy('contact-add', args = (self.object.slug,))
-
-    def get_initial(self):
-        initial = super().get_initial()
-        # context = self.get_context_data(**kwargs)
-        if self.request.GET.get('country'):
-            initial['country'] = Country.objects.get(id=self.request.GET.get('country'))
-        return initial.copy()
-
-    def form_valid(self, form):
-        for field in Project.objects.get_function_fields():
-            setattr(form.instance, field, self.request.POST.get(field))
-        form.instance.save()
-        return super().form_valid(form)
-
-class ProjectUpdate(ProjectView, UpdateView):
-    pass
-
-class ContactView(LoginRequiredMixin, View):
-    model = Contact
-    fields = ('first_name', 'last_name', 'phone', 'email')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.GET.get('survey'):
-            context['survey'] = Survey.objects.get(id=self.request.GET.get('survey'))
-        if self.request.GET.get('project'):
-            context['project'] = Project.objects.get(id=self.request.GET.get('project'))
-        return context
-
-
-class ContactList(ContactView, ListView):
-    pass
-
-class ContactDetail(ContactView, DetailView):
-    
-    def get_context_data(self, **kwargs):
-        self.object = self.get_object()
-        context = super().get_context_data(**kwargs)
-        if self.request.GET.get('survey'):
-            context['survey'] = Survey.objects.get(id=self.request.GET.get('survey'))
-            context['responses'] = QuestionResponse.objects.filter(question__survey=context['survey'], contact=self.object)
-        return context
-
-class ContactCreate(ContactView, CreateView):
-
-    def get_success_url(self):
-        return reverse_lazy('contact-create') + '?project={}'.format(self.request.GET.get('project'))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['setup_percent'] = 25
-        return context
-
-    def get_initial(self):
-        initial = super().get_initial()
-        # context = self.get_context_data(**kwargs)
-        if self.request.GET.get('project'):
-            initial['project'] = Project.objects.get(id=self.request.GET.get('project'))
-        return initial.copy()
-
-    def form_valid(self, form):
-        if self.request.GET.get('project'):
-            form.instance.project = Project.objects.get(id=self.request.GET.get('project'))
-            self.add_project_contacts_to_surveys(form.instance.project)
-        return super().form_valid(form)
-
-    def add_project_contacts_to_surveys(self, project):
-        for survey in project.survey_set.all():
-            survey.respondents.add(*project.contact_set.all())
-            survey.save()
-        return True
-
-
-class ContactUpdate(ContactView, UpdateView):
-    pass
-
-class ContactAdd(ProjectDetail):
-    template_name = 'surveys/contact_add.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['setup_percent'] = 25
-        return context
-
-class ContactImport(ProjectDetail):
-    template_name = 'surveys/contact_import.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['setup_percent'] = 25
-        return context
-
-    def post(self, request, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        try:
-            import_file = request.FILES['csv_file']
-        except KeyError:
-            messages.error(request, 'Please upload a file.')
-        else: 
-            self.import_csv_data(import_file)
-        return redirect(reverse('survey-create')+'?project={}'.format(self.object.id))
-        # return redirect(reverse('contact-list') + '?project={}'.format(self.object.id))
-
-    def import_csv_data(self, import_file):
-        errors = []
-        try:
-            # with open(import_file, 'rt', encoding="utf-8", errors='ignore') as csvfile:
-            reader = csv.DictReader(io.StringIO(import_file.read().decode('utf-8')))
-        except Exception as error:
-            errors.append(error)
-            messages.error(self.request, \
-                'Failed to read file. Please make sure the file is in CSV format.')
-        else:
-            errors = self.enumerate_rows(reader)
-        return errors
-
-    # Loop through CSV, skipping header row.
-    def enumerate_rows(self, reader, start=2):
-        # Index is for row numbers in error message-s.
-        for index, contact in enumerate(reader, start=2):
-            row_errors = []
-            try:
-                self.import_contact_row(contact)
-            except Exception as error:
-                row_errors.append('Row {0}: {1}'.format(index, error))
-        return row_errors
-
-    def import_contact_row(self, contact_dict):
-        contact = Contact.objects.create(**contact_dict)
-        return contact
-
-class ContactRemove(ContactDetail):
-
-    def get(self, request, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        survey = Survey.objects.get(id=request.GET.get('survey'))
-        survey.respondents.remove(self.object)
-        messages.error(request, 'Contact removed from survey')
-        return redirect(reverse('survey-detail', kwargs={'pk':survey.id}))
-
-
 class QuestionResponseView(LoginRequiredMixin, View):
     model = QuestionResponse
 
@@ -574,4 +464,14 @@ class PromptCreate(PromptView, CreateView):
 
 class PromptUpdate(PromptView, UpdateView):
     pass
+
+class ContactRemove(ContactDetail):
+
+    def get(self, request, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+        survey = Survey.objects.get(id=request.GET.get('survey'))
+        survey.respondents.remove(self.object)
+        messages.error(request, 'Contact removed from survey')
+        return redirect(reverse('survey-detail', kwargs={'pk':survey.id}))
 

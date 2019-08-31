@@ -7,7 +7,9 @@
       <p cless="lead">Add Questions to Survey</p>
       {% include 'addins/form.html' %}
     </div>
-    <div class="w-50 w-100-r p-4 p-0-r d-flex flex-column justify-content-between">
+    <div class="w-50 w-100-r p-3 p-0-r d-flex flex-column justify-content-between">
+    <div>
+    <p cless="lead">Edit Questions</p>
       <table class="table">
         <thead>
           <tr>
@@ -26,6 +28,7 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
       {% if survey.question_set.count %}
       <p class="text-right"><a href="{% url 'survey-detail' pk=survey.id %}?project={{ project.id }}" class="btn btn-primary btn-lg w-50 w-100-r text-white">Next Step >></a></p>
       {% endif %}

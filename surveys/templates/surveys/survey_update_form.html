@@ -1,5 +1,5 @@
 {% extends 'surveys/base_surveys.html' %}
-{% block tab_communication %}active{% endblock %}
+{% block tab_list %}active{% endblock %}
 {% block card %}
 <div class="d-flex flex-column flex-lg-row justify-content-between">
   <div class="w-50 w-100-r p-4 p-0-r" id = "survey">
@@ -27,32 +27,4 @@
     </table>
   </div>
 </div>
-{% endblock %}
-{% block javascript %}
-<script>
-  var select = $('.SelectizeCreate').selectize({
-
-    placeholder: 'Select an existing prompt or type a new one',
-    create:function (input, callback){
-      $.ajax({
-        url: '{% url "prompt-create" %}',
-        data: {
-          'name': input,
-          'category': $( this )[0].$input.attr('category'),
-          'survey': '{{ survey.id }}',
-          'csrfmiddlewaretoken': '{{ csrf_token }}',
-        },
-        type: 'POST',
-        success: function (result) {
-          if (result) {
-            callback({
-              value: result, 
-              text: input,
-            });
-          }
-        }
-      });
-    }
-  });
-</script>
 {% endblock %}

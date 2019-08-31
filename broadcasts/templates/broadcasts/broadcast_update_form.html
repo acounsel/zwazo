@@ -1,0 +1,30 @@
+{% extends 'broadcasts/base_broadcasts.html' %}
+{% block tab_broadcast_list %}active{% endblock %}
+{% block card %}
+<div class="d-flex flex-column flex-lg-row justify-content-between">
+  <div class="w-50 w-100-r p-4 p-0-r" id = "survey">
+    <p class="lead">Update Broadcast</p>
+    {% include 'addins/form.html' %}
+  </div>
+  <div class="w-50 w-100-r p-4 p-0-r d-flex flex-column justify-content-between overflow-auto">
+    <table class="table">
+      <thead>
+        <tr class="overflow-auto">
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contact in project.contact_set.all %}
+        <tr class="overflow-auto">
+          <td>{{ contact.first_name }} {{ contact.last_name }}</td> 
+          <td>{{ contact.phone }}</td>
+          <td>{{ contact.email }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

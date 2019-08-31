@@ -1,4 +1,4 @@
-{% extends 'surveys/base_contact.html' %}
+{% extends 'base_site/base_contact.html' %}
 {% block tab_form %}active{% endblock %}
 {% block card %}
 <div class="d-flex flex-column flex-lg-row justify-content-between">
@@ -26,7 +26,7 @@
       </tbody>
     </table>
     {% if project.contact_set.count > 0 %}
-    <p class="text-right"><a href="{% url 'survey-create' %}?project={{ project.id }}" class="btn btn-primary btn-lg w-50 w-100-r text-white">Next Step >></a></p>
+    <p class="text-right"><a href="{% url 'communication-create' slug=project.slug %}?project={{ project.id }}" class="btn btn-primary btn-lg w-50 w-100-r text-white">Next Step >></a></p>
     {% endif %}
   </div>
 

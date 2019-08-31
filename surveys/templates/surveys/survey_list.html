@@ -18,6 +18,10 @@
       <td>{{ survey.project }}</td>
       <td><a href="{% url 'contact-list' %}?survey={{ survey.id }}">{{ survey.respondents.count }}</td>
       <td><a href="">?</td>
+      <td>
+        <a href="{% url 'survey-update' pk=survey.id%}">Edit</a>
+        <a href="{% url 'survey-delete' pk=survey.id%}">Delete</a>
+      </td>
     </tr>
     {% endfor %}
   </tbody>

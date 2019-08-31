@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'surveys',
     'accounts',
     'crispy_forms',
+    'broadcasts',
+    'base_site'
 ]
 
 MIDDLEWARE = [

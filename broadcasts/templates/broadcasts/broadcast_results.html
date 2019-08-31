@@ -1,0 +1,35 @@
+{% extends 'broadcasts/base_broadcasts.html' %}
+{% block tab_responses %}
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'broadcast-response' pk=broadcast.id %}">Survey Results</a>
+  </li>
+{% endblock %}
+
+{% block card%}
+  <table class="table w-100">
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>Kind</th>
+        <th>Response</th>
+        <th>Respondent</th>
+        <th>Number</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for response in broadcast.responses %}
+      <tr>
+        <td>{{ response.question.body }}</td>
+        <td>{{ response.question.get_kind_display }}</td>
+        {% if response.question.kind == 'text' %}
+        <td><a href="{{ response.response }}">{% if response.transcription %}{{ response.transcription }}{% else %}Recording Link{% endif %}</a></td>
+        {% else %}
+        <td>{{ response.response }}</td>
+        {% endif %}
+        <td><a href="{% url 'contact-detail' pk=response.contact.id %}?broadcast={{ broadcast.id }}">{{ response.contact }}</a></td>
+        <td>{{ response.phone_number }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

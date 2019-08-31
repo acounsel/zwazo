@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
   <div class="d-flex flex-column flex-lg-row justify-content-between">
-  <p class="h2 mb-5 text-white">{% if project %}{{ project.name }}{% else %}Surveys{% endif %}</p>
+  <p class="h2 mb-5 text-white">{% if project %}{{ project.name }}{% else %}Broadcasts{% endif %}</p>
   {% if project %}
     {% include 'addins/progress_bar.html' %}
   {% endif %}
@@ -35,7 +35,7 @@
       </ul>
     </div>
     <div class="card-body">
-      <h3 class="card-title mb-5">{% if survey %}<a href="{% url 'survey-detail' pk=survey.id %}" class="text-dark">{{ survey.name }}</a>{% else %}Surveys{% endif %}</h3>
+      <h3 class="card-title mb-5">{% if broadcast %}<a href="{% url 'broadcast:broadcast-detail' pk=broadcast.id %}" class="text-dark">{{ broadcast.name }}</a>{% else %}Broadcasts{% endif %}</h3>
       <div class="text-left">
       {% block card %}
       {% endblock %}

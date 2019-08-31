@@ -1,0 +1,57 @@
+{% extends 'broadcasts/base_broadcasts.html' %}
+{% block tab_broadcast_list %}active{% endblock %}
+{% if broadcast.responses %}
+{% endif %}
+
+{% block card%}
+<div class="d-flex justify-content-between">
+  <div class="p-3">
+    <p class="lead">Message</p>
+    <p>Broadcast Type: {{ broadcast.broadcast_type }}</p>
+    <p>Set to call back message: {{ broadcast.is_callback }} </p>
+    {% if broadcast.text %}
+    <p>Broadcast Text: {{ broadcast.text }} </p>
+    {% endif %}
+    {% if broadcast.sound_file %}
+    <p>Broadcast Sound File: {{ broadcast.sound_file }} </p>
+    {% endif %}
+    <p>Repeater Key: {{ broadcast.repeater }}</p>
+    <p>Response Key: {{ broadcast.response }}</p>
+
+  </div>
+  <div class="p-3">
+    <p class="lead">Sending To</p>
+    <a href="{% url 'broadcast:manage-contacts' pk=broadcast.id %}?project={{ broadcast.project.id }}">Add Contact</a>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Phone</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contact in broadcast.respondents.all %}
+        <tr>
+          <td>{{ contact.first_name }}</td> 
+          <td>{{ contact.last_name }}</td>
+          <td>{{ contact.phone }}</td>
+          <td><a href="{% url 'contact-remove' pk=contact.id %}?broadcast={{ broadcast.id }}">x</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+ 
+<form method="POST" action="">
+
+  {% csrf_token %}
+  <div class="p-3">
+    <input type="submit" class="btn btn-primary" value="Send Broadcast">
+  </div>
+
+</form>
+{% endblock %}

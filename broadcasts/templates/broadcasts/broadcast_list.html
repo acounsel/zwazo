@@ -1,0 +1,29 @@
+{% extends 'broadcasts/base_broadcasts.html' %}
+{% block tab_broadcast_list %}active{% endblock %}
+
+{% block card %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Broadcast</th>
+      <th>Project</th>
+      <th>Contacts</th>
+      <th>Responses</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in broadcast_list %}
+    <tr>
+      <td><a href="{% url 'broadcast:broadcast-detail' pk=item.id %}{% if project %}?project={{ item.project.id }}{% endif %}">{{ item.name }}</a></td>
+      <td>{{ item.project }}</td>
+      <td><a href="{% url 'contact-list' %}?broadcasts={{ item.id }}">{{ item.respondents.count }}</td>
+      <td><a href="">?</td>
+      <td>
+        <a href="{% url 'broadcast:broadcast-update' pk=item.id %}">Edit</a>
+        <a href="{% url 'broadcast:broadcast-delete' pk=item.id %}">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

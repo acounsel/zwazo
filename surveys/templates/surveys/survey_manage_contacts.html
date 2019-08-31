@@ -1,0 +1,24 @@
+{% extends 'surveys/base_surveys.html' %}
+{% block tab_list %}active{% endblock %}
+{% block card %}
+{% load crispy_forms_tags %}
+<div class="d-flex flex-column flex-lg-row justify-content-between">
+  <div class="w-50 w-100-r p-4 p-0-r" id = "survey">
+    <p class="lead">Add Contacts to Survey From Contact List</p>
+	    {% if contact.count < 1 %}
+		  <p>You have no contacts in your contact list. Click
+		  	<a href="{% url 'contact-add' slug=project.slug %}">here</a> to create a contact.
+		  </p>
+	    {% endif %}
+		<form method="POST" action="{{ form_action }}" novalidate enctype="multipart/form-data">
+		  {% csrf_token %}
+		  {% for field in form %}
+		    {{ field|as_crispy_field }}
+		    {% if field.errors %}
+		    <div class="error">{{ field.errors }}</div>
+		    {% endif %}
+		  {% endfor %}
+		  <input class="btn btn-primary btn-lg mt-3 w-50 w-100-r" type="submit" value="Submit">
+		</form>
+  </div>
+{% endblock %}
