@@ -13,6 +13,7 @@ urlpatterns = [
             path('run/', views.run_survey, name='run-survey'),
             path('update/', views.SurveyUpdate.as_view(), name='survey-update'),
             path('responses/', views.SurveyResponse.as_view(), name='survey-response'),
+            path('export/', views.SurveyExport.as_view(), name='survey-export'),
             path('prompts/', include([
                 path('', views.SurveyPrompts.as_view(), name='survey-prompts'),
                 path('sound/', views.SurveyPromptSound.as_view(), name='survey-prompt-sound'),

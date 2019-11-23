@@ -1,4 +1,5 @@
 import csv
+import datetime
 import io
 import logging
 
@@ -6,17 +7,20 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.views.generic import View, DetailView, ListView
-from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
+from django.views.generic.edit import FormView, CreateView
+from django.views.generic.edit import UpdateView, DeleteView
 
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
-from twilio.twiml.voice_response import Gather, Dial, VoiceResponse, Say
+from twilio.twiml.voice_response import Gather, Dial, VoiceResponse
+from twilio.twiml.voice_response import Say
 
 from .forms import SurveyForm, PromptFormSet
 from .models import Language, Country, Project, Contact, Prompt
@@ -24,6 +28,16 @@ from .models import Survey, Question, QuestionResponse
 from .decorators import validate_twilio_request
 
 logger = logging.getLogger(__name__)
+
+class Echo:
+    """An object that implements just the write method 
+    of the file-like interface.
+    """
+    def write(self, value):
+        """Write the value by returning it, instead of
+        storing in a buffer.
+        """
+        return value
 
 class SurveyView(LoginRequiredMixin, View):
     model = Survey
@@ -36,14 +50,16 @@ class SurveyView(LoginRequiredMixin, View):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.GET.get('project'):
-            context['project'] = Project.objects.get(id=self.request.GET.get('project'))
+            context['project'] = Project.objects.get(
+                id=self.request.GET.get('project'))
         return context
 
     def get_initial(self):
         initial = super().get_initial()
         # context = self.get_context_data(**kwargs)
         if self.request.GET.get('project'):
-            initial['project'] = Project.objects.get(id=self.request.GET.get('project'))
+            initial['project'] = Project.objects.get(
+                id=self.request.GET.get('project'))
         return initial.copy()
 
 class SurveyList(SurveyView, ListView):
@@ -56,7 +72,11 @@ class SurveyList(SurveyView, ListView):
     def get_queryset(self):
         queryset = super(SurveyList, self).get_queryset()
         if self.request.GET.get('project'):
-            queryset = queryset.filter(project=Project.objects.get(id=self.request.GET.get('project')))
+            queryset = queryset.filter(
+                project=Project.objects.get(
+                    id=self.request.GET.get('project')
+                )
+            )
         return queryset
 
 class Home(ListView):
@@ -115,13 +135,22 @@ def run_survey(request, pk):
         'pk': survey.id,
         'question_pk': first_question.id
     }
-    first_question_url = reverse('run-question', kwargs=first_question_id)
+    first_question_url = reverse(
+        'run-question', 
+        kwargs=first_question_id
+    )
     twiml_response = VoiceResponse()
-    twiml_response = survey.say_prompt(twiml=twiml_response, kind='welcome')
+    twiml_response = survey.say_prompt(
+        twiml=twiml_response, 
+        kind='welcome'
+    )
     # logger.info(twiml_response)
     twiml_response.redirect(first_question_url, method='GET')
     messages.success(request, 'Survey Sent')
-    return HttpResponse(twiml_response, content_type='application/xml')
+    return HttpResponse(
+        twiml_response, 
+        content_type='application/xml'
+    )
 
 
 @require_GET
@@ -131,7 +160,9 @@ def run_question(request, pk, question_pk):
     twiml_response = VoiceResponse()
     action = save_response_url(question)
     if question.kind == Question.TEXT:
-        twiml_response = question.say_question_and_prompt(twiml_response)
+        twiml_response = question.say_question_and_prompt(
+            twiml_response
+        )
         twiml_response.record(
             action=action,
             method='POST',
@@ -141,13 +172,20 @@ def run_question(request, pk, question_pk):
             transcribe_callback=action
         )
     else:
-        gather = Gather(action=action, method='POST', numDigits=question.max_length, timeout=question.timeout)
+        gather = Gather(
+            action=action, 
+            method='POST', 
+            numDigits=question.max_length, 
+            timeout=question.timeout)
         gather = question.say_question_and_prompt(gather)
         twiml_response.append(gather)
         twiml_response.redirect(action, method='POST')
 
     request.session['answering_question_id'] = question.id
-    return HttpResponse(twiml_response, content_type='application/xml')
+    return HttpResponse(
+        twiml_response, 
+        content_type='application/xml'
+    )
 
 def save_response_url(question):
     return reverse('save_response',
@@ -205,16 +243,20 @@ def goodbye(request, survey):
     return HttpResponse(response)
 
 def save_response_from_request(request, question):
-    # session_id = request.POST['MessageSid' if request.is_sms else 'CallSid']
+    # session_id = request.POST['MessageSid' \
+    # if request.is_sms else 'CallSid']
     session_id = request.POST['CallSid']
     request_body = _extract_request_body(request, question.kind)
     phone_number = request.POST['To']
-    response = QuestionResponse.objects.filter(question_id=question.id,
-                                               call_sid=session_id).first()
+    response = QuestionResponse.objects.filter(
+        question_id=question.id,
+        call_sid=session_id).first()
     if not response:
         response = QuestionResponse(call_sid=session_id,
                          phone_number=phone_number,
-                         contact=Contact.objects.filter(survey=question.survey, phone=phone_number)[0],
+                         contact=Contact.objects.filter(
+                            survey=question.survey, 
+                            phone=phone_number)[0],
                          response=request_body,
                          question=question)
         response.save()
@@ -252,7 +294,8 @@ class SurveyCreate(SurveyView, CreateView):
 
     def form_valid(self, form):
         if self.request.GET.get('project'):
-            form.instance.project = Project.objects.get(id=self.request.GET.get('project'))
+            form.instance.project = Project.objects.get(
+                id=self.request.GET.get('project'))
             form.instance.save()
             for contact in form.instance.project.contact_set.all():
                 form.instance.respondents.add(contact)
@@ -267,7 +310,9 @@ class SurveyPrompts(SurveyUpdate):
     # template_name = 'surveys/survey_prompts.html'
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('question-create', args = (self.object.id,))
+        return reverse_lazy(
+            'question-create', args=(self.object.id,)
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -289,7 +334,10 @@ class SurveyPromptSound(SurveyDetail):
     def get_initial_categories(self):
         categories = []
         for choice in Prompt.CATEGORY_CHOICES:
-            categories.append({'category': choice[0], 'language': self.object.language})
+            categories.append({
+                'category': choice[0], 
+                'language': self.object.language
+            })
         return categories
 
     def post(self, request, **kwargs):
@@ -297,8 +345,14 @@ class SurveyPromptSound(SurveyDetail):
         context = self.get_context_data(**kwargs)
         context['formset'] = self.get_formset(request)
         if context['formset'].is_valid():
-            survey = self.process_formset(request, context['formset'])
-            return redirect(reverse_lazy('question-create', kwargs = {'pk': survey.id}))
+            survey = self.process_formset(
+                request, 
+                context['formset']
+            )
+            return redirect(reverse_lazy(
+                'question-create', 
+                kwargs = {'pk': survey.id}
+            ))
         messages.error(request, 'Please correct the errors below')
         return self.render_to_response(context=context)
 
@@ -326,14 +380,18 @@ class SurveyResponse(SurveyView, DetailView):
     
 class QuestionView(LoginRequiredMixin, View):
     model = Question
-    fields = ('body', 'kind', 'sound_file', 'repeater', 'terminator', 'has_prompt')
+    fields = ('body', 'kind', 'sound_file', 'repeater', 
+        'terminator', 'has_prompt')
 
     def get_object(self, queryset=None):
         obj = Question.objects.get(id=self.kwargs['question_pk'])
         return obj
 
     def get_success_url(self, **kwargs):         
-        return reverse_lazy('question-create', kwargs = {'pk': self.object.survey.id})
+        return reverse_lazy(
+            'question-create', 
+            kwargs = {'pk': self.object.survey.id}
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -363,7 +421,8 @@ class QuestionCreate(QuestionView, CreateView):
         return initial.copy()
 
     def form_valid(self, form):
-        form.instance.survey = Survey.objects.get(id=self.kwargs['pk'])
+        form.instance.survey = Survey.objects.get(
+            id=self.kwargs['pk'])
         return super().form_valid(form)
 
 class QuestionUpdate(QuestionView, UpdateView):
@@ -375,7 +434,10 @@ class QuestionSound(QuestionView, UpdateView):
 class QuestionDelete(QuestionView, DeleteView):
 
     def get_success_url(self):
-        return reverse_lazy('survey-detail', kwargs={'pk':self.kwargs['pk']})
+        return reverse_lazy(
+            'survey-detail', 
+            kwargs={'pk':self.kwargs['pk']}
+        )
 
 class ProjectView(LoginRequiredMixin, View):
     model = Project
@@ -391,18 +453,23 @@ class ProjectCreate(ProjectView, CreateView):
 
     def get_success_url(self, **kwargs):
         print(self.request.POST)     
-        return reverse_lazy('contact-add', args = (self.object.slug,))
+        return reverse_lazy('contact-add', args=(self.object.slug,))
 
     def get_initial(self):
         initial = super().get_initial()
         # context = self.get_context_data(**kwargs)
         if self.request.GET.get('country'):
-            initial['country'] = Country.objects.get(id=self.request.GET.get('country'))
+            initial['country'] = Country.objects.get(
+                id=self.request.GET.get('country'))
         return initial.copy()
 
     def form_valid(self, form):
         for field in Project.objects.get_function_fields():
-            setattr(form.instance, field, self.request.POST.get(field))
+            setattr(
+                form.instance, 
+                field, 
+                self.request.POST.get(field)
+            )
         form.instance.save()
         return super().form_valid(form)
 
@@ -416,9 +483,11 @@ class ContactView(LoginRequiredMixin, View):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.GET.get('survey'):
-            context['survey'] = Survey.objects.get(id=self.request.GET.get('survey'))
+            context['survey'] = Survey.objects.get(
+                id=self.request.GET.get('survey'))
         if self.request.GET.get('project'):
-            context['project'] = Project.objects.get(id=self.request.GET.get('project'))
+            context['project'] = Project.objects.get(
+                id=self.request.GET.get('project'))
         return context
 
 
@@ -431,14 +500,18 @@ class ContactDetail(ContactView, DetailView):
         self.object = self.get_object()
         context = super().get_context_data(**kwargs)
         if self.request.GET.get('survey'):
-            context['survey'] = Survey.objects.get(id=self.request.GET.get('survey'))
-            context['responses'] = QuestionResponse.objects.filter(question__survey=context['survey'], contact=self.object)
+            context['survey'] = Survey.objects.get(
+                id=self.request.GET.get('survey'))
+            context['responses'] = QuestionResponse.objects.filter(
+                question__survey=context['survey'], 
+                contact=self.object)
         return context
 
 class ContactCreate(ContactView, CreateView):
 
     def get_success_url(self):
-        return reverse_lazy('contact-create') + '?project={}'.format(self.request.GET.get('project'))
+        return reverse_lazy('contact-create') + '?project={}'.format(
+            self.request.GET.get('project'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -449,13 +522,16 @@ class ContactCreate(ContactView, CreateView):
         initial = super().get_initial()
         # context = self.get_context_data(**kwargs)
         if self.request.GET.get('project'):
-            initial['project'] = Project.objects.get(id=self.request.GET.get('project'))
+            initial['project'] = Project.objects.get(
+                id=self.request.GET.get('project'))
         return initial.copy()
 
     def form_valid(self, form):
         if self.request.GET.get('project'):
-            form.instance.project = Project.objects.get(id=self.request.GET.get('project'))
-            self.add_project_contacts_to_surveys(form.instance.project)
+            form.instance.project = Project.objects.get(
+                id=self.request.GET.get('project'))
+            self.add_project_contacts_to_surveys(
+                form.instance.project)
         return super().form_valid(form)
 
     def add_project_contacts_to_surveys(self, project):
@@ -493,18 +569,28 @@ class ContactImport(ProjectDetail):
             messages.error(request, 'Please upload a file.')
         else: 
             self.import_csv_data(import_file)
-        return redirect(reverse('survey-create')+'?project={}'.format(self.object.id))
-        # return redirect(reverse('contact-list') + '?project={}'.format(self.object.id))
+        return redirect(
+            reverse('survey-create')+'?project={}'.format(
+                self.object.id
+            )
+        )
+
 
     def import_csv_data(self, import_file):
         errors = []
         try:
-            # with open(import_file, 'rt', encoding="utf-8", errors='ignore') as csvfile:
-            reader = csv.DictReader(io.StringIO(import_file.read().decode('utf-8')))
+            # with open(import_file, 'rt', encoding="utf-8", 
+            # errors='ignore') as csvfile:
+            reader = csv.DictReader(
+                io.StringIO(
+                    import_file.read().decode('utf-8')
+                )
+            )
         except Exception as error:
             errors.append(error)
             messages.error(self.request, \
-                'Failed to read file. Please make sure the file is in CSV format.')
+                'Failed to read file. Please make sure the file is \
+                in CSV format.')
         else:
             errors = self.enumerate_rows(reader)
         return errors
@@ -532,7 +618,10 @@ class ContactRemove(ContactDetail):
         survey = Survey.objects.get(id=request.GET.get('survey'))
         survey.respondents.remove(self.object)
         messages.error(request, 'Contact removed from survey')
-        return redirect(reverse('survey-detail', kwargs={'pk':survey.id}))
+        return redirect(reverse(
+            'survey-detail', 
+            kwargs={'pk':survey.id}
+        ))
 
 
 class QuestionResponseView(LoginRequiredMixin, View):
@@ -574,4 +663,42 @@ class PromptCreate(PromptView, CreateView):
 
 class PromptUpdate(PromptView, UpdateView):
     pass
+
+class SurveyExport(QuestionResponseView, ListView):
+
+    def get(self, request, **kwargs):
+        resp = super().get(request, **kwargs)
+        rows = self.get_response_list(self.get_queryset())
+        pseudo_buffer = Echo()
+        writer = csv.writer(pseudo_buffer)
+        response = StreamingHttpResponse(
+            (writer.writerow(row) for row in rows),
+            content_type="text/csv")
+        today = datetime.date.today()
+        cont_disp = 'attatchment;filename="responses_%s.csv"' % today
+        response['Content-Disposition'] = cont_disp
+        return response
+
+    def get_response_list(self, queryset):
+        header = ['question', 'question_type', 'respondent_first_name',
+            'respondent_last_name', 'number', 'response', 
+            'transcription']
+        rows = [header,]
+        for response in queryset:
+            rows.append(self.get_response_row(response))
+        return rows
+
+    def get_response_row(self, response):
+        row = [
+            response.question.body,
+            response.question.kind,
+            getattr(response.contact, 'first_name', None),
+            getattr(response.contact, 'last_name', None),
+            response.phone_number,
+            response.response,
+            response.transcription
+        ]
+        return row
+
+
 

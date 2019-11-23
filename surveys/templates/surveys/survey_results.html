@@ -3,6 +3,9 @@
   <li class="nav-item">
     <a class="nav-link active" href="{% url 'survey-response' pk=survey.id %}">Survey Results</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'survey-export' pk=survey.id %}">Export</a>
+  </li>
 {% endblock %}
 
 {% block card%}
