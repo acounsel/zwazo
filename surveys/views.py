@@ -666,6 +666,11 @@ class PromptUpdate(PromptView, UpdateView):
 
 class SurveyExport(QuestionResponseView, ListView):
 
+    def get_queryset(self):
+        queryset = super(SurveyExport, self).get_queryset()
+        survey = Survey.objects.get(id=self.kwargs.get('pk'))
+        return queryset.filter(question__survey=survey)
+
     def get(self, request, **kwargs):
         resp = super().get(request, **kwargs)
         rows = self.get_response_list(self.get_queryset())
@@ -680,7 +685,7 @@ class SurveyExport(QuestionResponseView, ListView):
         return response
 
     def get_response_list(self, queryset):
-        header = ['question', 'question_type', 'respondent_first_name',
+        header = ['survey', 'question', 'question_type', 'respondent_first_name',
             'respondent_last_name', 'number', 'response', 
             'transcription']
         rows = [header,]
@@ -690,6 +695,7 @@ class SurveyExport(QuestionResponseView, ListView):
 
     def get_response_row(self, response):
         row = [
+            response.question.survey,
             response.question.body,
             response.question.kind,
             getattr(response.contact, 'first_name', None),
