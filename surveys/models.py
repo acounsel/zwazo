@@ -122,7 +122,7 @@ class Contact(models.Model):
     def __str__(self):
         return '{0} {1}'.format(self.first_name, self.last_name)
 
-    def get_absolute_url(self): 
+    def get_absolute_url(self):
         return reverse('contact-list') + '?project={0}'.format(getattr(self.project, 'id', ''))
 
 class Prompt(models.Model):
@@ -211,10 +211,10 @@ class Survey(models.Model):
         if self.prompt_type == self.TEXT:
             return reverse('survey-prompts', kwargs={'pk':self.id})
         elif self.prompt_type == self.SOUND:
-            return reverse('survey-prompt-sound', kwargs={'pk':self.id}) 
+            return reverse('survey-prompt-sound', kwargs={'pk':self.id})
         else:
             self.add_prompts(prompts=Prompt.objects.filter(is_default=True))
-            return reverse('question-create', kwargs={'pk':self.id})  
+            return reverse('question-create', kwargs={'pk':self.id})
 
     def add_prompts(self, prompts):
         for prompt in prompts:
@@ -250,6 +250,7 @@ class Question(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     repeater = models.CharField(max_length=2, blank=True)
     terminator = models.CharField(max_length=2, blank=True)
+    rewinder = models.CharField(max_length=2, blank=True)
     max_length = models.IntegerField(default=1)
     timeout = models.IntegerField(default=5)
     has_prompt = models.BooleanField(default=True)
@@ -265,6 +266,9 @@ class Question(models.Model):
                 return self
             elif response.is_terminator():
                 return None
+            elif response.is_rewinder():
+                prev_questions = self.get_previous_questions()
+                return prev_questions[0] if prev_questions else None
         next_questions = self.get_next_questions()
 
         return next_questions[0] if next_questions else None
@@ -274,6 +278,12 @@ class Question(models.Model):
         next_questions = \
             survey.question_set.order_by('id').filter(id__gt=self.id)
         return next_questions
+
+    def get_previous_questions(self):
+        survey = Survey.objects.get(id=self.survey_id)
+        prev_questions = \
+            survey.question_set.order_by('-id').filter(id__lt=self.id)
+        return prev_questions
 
     def get_responses(self):
         return self.questionresponse_set.values('response').order_by('response').annotate(Count('response'))
@@ -335,4 +345,18 @@ class QuestionResponse(models.Model):
             if self.response == self.question.terminator:
                 return True
         return False
+    
+    def is_rewinder(self):
+        if self.question.rewinder:
+            if self.response == self.question.rewinder:
+                return True
+        return False
 
+class ResponseAction(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    value = models.CharField(max_length=255, blank=True)
+    redirect = models.ForeignKey(Question, on_delete=models.SET_NULL, blank=True, null=True, related_name='redirects')
+    is_global = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return '{0} on question: {1}'.format(self.value, self.question)

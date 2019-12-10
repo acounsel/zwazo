@@ -24,13 +24,13 @@ from twilio.twiml.voice_response import Say
 
 from .forms import SurveyForm, PromptFormSet
 from .models import Language, Country, Project, Contact, Prompt
-from .models import Survey, Question, QuestionResponse
+from .models import Survey, Question, QuestionResponse, ResponseAction
 from .decorators import validate_twilio_request
 
 logger = logging.getLogger(__name__)
 
 class Echo:
-    """An object that implements just the write method 
+    """An object that implements just the write method
     of the file-like interface.
     """
     def write(self, value):
@@ -102,7 +102,7 @@ class SurveyDetail(SurveyView, DetailView):
 
     def get_twilio_client(self):
         return TwilioClient(
-            settings.TWILIO_ACCOUNT_SID, 
+            settings.TWILIO_ACCOUNT_SID,
             settings.TWILIO_AUTH_TOKEN
         )
 
@@ -136,19 +136,19 @@ def run_survey(request, pk):
         'question_pk': first_question.id
     }
     first_question_url = reverse(
-        'run-question', 
+        'run-question',
         kwargs=first_question_id
     )
     twiml_response = VoiceResponse()
     twiml_response = survey.say_prompt(
-        twiml=twiml_response, 
+        twiml=twiml_response,
         kind='welcome'
     )
     # logger.info(twiml_response)
     twiml_response.redirect(first_question_url, method='GET')
     messages.success(request, 'Survey Sent')
     return HttpResponse(
-        twiml_response, 
+        twiml_response,
         content_type='application/xml'
     )
 
@@ -173,9 +173,9 @@ def run_question(request, pk, question_pk):
         )
     else:
         gather = Gather(
-            action=action, 
-            method='POST', 
-            numDigits=question.max_length, 
+            action=action,
+            method='POST',
+            numDigits=question.max_length,
             timeout=question.timeout)
         gather = question.say_question_and_prompt(gather)
         twiml_response.append(gather)
@@ -183,7 +183,7 @@ def run_question(request, pk, question_pk):
 
     request.session['answering_question_id'] = question.id
     return HttpResponse(
-        twiml_response, 
+        twiml_response,
         content_type='application/xml'
     )
 
@@ -255,7 +255,7 @@ def save_response_from_request(request, question):
         response = QuestionResponse(call_sid=session_id,
                          phone_number=phone_number,
                          contact=Contact.objects.filter(
-                            survey=question.survey, 
+                            survey=question.survey,
                             phone=phone_number)[0],
                          response=request_body,
                          question=question)
@@ -335,7 +335,7 @@ class SurveyPromptSound(SurveyDetail):
         categories = []
         for choice in Prompt.CATEGORY_CHOICES:
             categories.append({
-                'category': choice[0], 
+                'category': choice[0],
                 'language': self.object.language
             })
         return categories
@@ -346,11 +346,11 @@ class SurveyPromptSound(SurveyDetail):
         context['formset'] = self.get_formset(request)
         if context['formset'].is_valid():
             survey = self.process_formset(
-                request, 
+                request,
                 context['formset']
             )
             return redirect(reverse_lazy(
-                'question-create', 
+                'question-create',
                 kwargs = {'pk': survey.id}
             ))
         messages.error(request, 'Please correct the errors below')
@@ -358,7 +358,7 @@ class SurveyPromptSound(SurveyDetail):
 
     def get_formset(self, request):
         return PromptFormSet(
-                            request.POST, 
+                            request.POST,
                             request.FILES,
                             queryset=Prompt.objects.none(),
                             initial=self.get_initial_categories())
@@ -380,16 +380,16 @@ class SurveyResponse(SurveyView, DetailView):
     
 class QuestionView(LoginRequiredMixin, View):
     model = Question
-    fields = ('body', 'kind', 'sound_file', 'repeater', 
+    fields = ('body', 'kind', 'sound_file', 'repeater',
         'terminator', 'has_prompt')
 
     def get_object(self, queryset=None):
         obj = Question.objects.get(id=self.kwargs['question_pk'])
         return obj
 
-    def get_success_url(self, **kwargs):         
+    def get_success_url(self, **kwargs):
         return reverse_lazy(
-            'question-create', 
+            'question-create',
             kwargs = {'pk': self.object.survey.id}
         )
 
@@ -435,7 +435,7 @@ class QuestionDelete(QuestionView, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy(
-            'survey-detail', 
+            'survey-detail',
             kwargs={'pk':self.kwargs['pk']}
         )
 
@@ -452,7 +452,7 @@ class ProjectDetail(ProjectView, DetailView):
 class ProjectCreate(ProjectView, CreateView):
 
     def get_success_url(self, **kwargs):
-        print(self.request.POST)     
+        print(self.request.POST)
         return reverse_lazy('contact-add', args=(self.object.slug,))
 
     def get_initial(self):
@@ -466,8 +466,8 @@ class ProjectCreate(ProjectView, CreateView):
     def form_valid(self, form):
         for field in Project.objects.get_function_fields():
             setattr(
-                form.instance, 
-                field, 
+                form.instance,
+                field,
                 self.request.POST.get(field)
             )
         form.instance.save()
@@ -503,7 +503,7 @@ class ContactDetail(ContactView, DetailView):
             context['survey'] = Survey.objects.get(
                 id=self.request.GET.get('survey'))
             context['responses'] = QuestionResponse.objects.filter(
-                question__survey=context['survey'], 
+                question__survey=context['survey'],
                 contact=self.object)
         return context
 
@@ -567,7 +567,7 @@ class ContactImport(ProjectDetail):
             import_file = request.FILES['csv_file']
         except KeyError:
             messages.error(request, 'Please upload a file.')
-        else: 
+        else:
             self.import_csv_data(import_file)
         return redirect(
             reverse('survey-create')+'?project={}'.format(
@@ -579,7 +579,7 @@ class ContactImport(ProjectDetail):
     def import_csv_data(self, import_file):
         errors = []
         try:
-            # with open(import_file, 'rt', encoding="utf-8", 
+            # with open(import_file, 'rt', encoding="utf-8",
             # errors='ignore') as csvfile:
             reader = csv.DictReader(
                 io.StringIO(
@@ -619,7 +619,7 @@ class ContactRemove(ContactDetail):
         survey.respondents.remove(self.object)
         messages.error(request, 'Contact removed from survey')
         return redirect(reverse(
-            'survey-detail', 
+            'survey-detail',
             kwargs={'pk':survey.id}
         ))
 
@@ -664,6 +664,23 @@ class PromptCreate(PromptView, CreateView):
 class PromptUpdate(PromptView, UpdateView):
     pass
 
+class ResponseActionCreate(CreateView):
+    model = ResponseAction
+    fields = ('question', 'value', 'redirect')
+    
+    def get_success_url(self):
+        return reverse_lazy(
+            'survey-detail',
+            kwargs={'pk':self.kwargs['pk']}
+        )
+
+    def get_form(self):
+        survey = Survey.objects.get(id=self.kwargs.get('pk'))
+        form = super().get_form()
+        form.fields['question'].queryset = \
+            Question.objects.filter(survey=survey)
+        return form
+
 class SurveyExport(QuestionResponseView, ListView):
 
     def get_queryset(self):
@@ -686,7 +703,7 @@ class SurveyExport(QuestionResponseView, ListView):
 
     def get_response_list(self, queryset):
         header = ['survey', 'question', 'question_type', 'respondent_first_name',
-            'respondent_last_name', 'number', 'response', 
+            'respondent_last_name', 'number', 'response',
             'transcription']
         rows = [header,]
         for response in queryset:

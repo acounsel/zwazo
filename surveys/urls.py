@@ -21,6 +21,7 @@ urlpatterns = [
             path('questions/', include([
                 path('', views.QuestionList.as_view(), name='question-list'),
                 path('add/', views.QuestionCreate.as_view(), name='question-create'),
+                path('actions/', views.ResponseActionCreate.as_view(), name='response-action-create'),
                 path('<int:question_pk>/', include([
                     path('', views.QuestionDetail.as_view(), name='question-detail'),
                     path('run/', views.run_question, name='run-question'),
