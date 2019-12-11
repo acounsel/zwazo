@@ -681,6 +681,11 @@ class ResponseActionCreate(CreateView):
             Question.objects.filter(survey=survey)
         return form
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['survey'] = Survey.objects.get(id=self.kwargs.get('pk'))
+        return context
+
 class SurveyExport(QuestionResponseView, ListView):
 
     def get_queryset(self):

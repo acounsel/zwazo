@@ -262,7 +262,11 @@ class Question(models.Model):
 
     def next(self, response=None):
         if response:
-            if response.is_repeater():
+            actions = ActionResponse.objects.filter(
+                value=response.response, question=self)
+            if actions.count():
+                return action[0].redirect
+            elif response.is_repeater():
                 return self
             elif response.is_terminator():
                 return None
