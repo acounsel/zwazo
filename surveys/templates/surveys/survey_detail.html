@@ -13,30 +13,60 @@
 
 {% block card%}
 <div class="d-flex justify-content-between">
-  <div class="p-3">
-    <p class="lead">Questions</p>
-    <a href="{% url 'question-create' pk=survey.id %}?project={{  project.id }}">Add Question</a>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Question</th>
-          <th>Kind</th>
-          <th>Sound</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for question in survey.question_set.all %}
-        <tr>
-          <td><a href="{% url 'question-update' pk=question.survey.id question_pk=question.id %}">{{ question.body }}</a></td>
-          <td>{{ question.get_kind_display }}</td>
-          <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>
-          <td><a href="{% url 'question-delete' pk=question.survey.id question_pk=question.id%}">x</a></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <div class="d-flex flex-column">
+    <div class="p-3">
+      <p class="lead">Welcome Message</p>
+      <div class="d-flex">
+        <div class="Collapser">Add Welcome Message</div>
+        <div class="d-sm-flex Collapsible-parent">
+          <div class="Collapsible">
+            <div>Message Body</div>
+            <input>
+            <div>Sound File</div>
+            <input>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="p-3">
+      <p class="lead">Questions</p>
+      <a href="{% url 'question-create' pk=survey.id %}?project={{  project.id }}">Add Question</a>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Kind</th>
+            <th>Sound</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for question in survey.question_set.all %}
+          <tr>
+            <td><a href="{% url 'question-update' pk=question.survey.id question_pk=question.id %}">{{ question.body }}</a></td>
+            <td>{{ question.get_kind_display }}</td>
+            <td>{% if question.sound %}Yes{% else %}No{% endif %}</td>
+            <td><a href="{% url 'question-delete' pk=question.survey.id question_pk=question.id%}">x</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="p-3">
+      <p class="lead">Closing Message</p>
+      <div class="d-flex">
+        <div class="Collapser">Add Closing Message</div>
+        <div class="d-sm-flex Collapsible-parent">
+          <div class="Collapsible">
+            <div>Message Body</div>
+            <input>
+            <div>Sound File</div>
+            <input>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
   <div class="p-3">
     <p class="lead">Sending To</p>
     <a href="{% url 'contact-create' %}?project={{ survey.project.id }}">Add Contact</a>
@@ -69,9 +99,33 @@
   {% csrf_token %}
   <div class="p-3">
     <input type="submit" class="btn btn-primary" value="Send Survey">
-    <a href="{% url 'response-action-create' pk=survey.id %}" class="btn btn-secondary ml-3">Decision Trees</a>
+    <a href="{% url 'response-action-create' pk=survey.id %}?project={{  project.id }}" class="btn btn-secondary ml-3">Decision Trees</a>
   </div>
 
 </form>
 
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+  $( 'body' ).off('change').on('change', '.MessageCreate', function() {
+    console.log($( this ));
+    $.ajax({ 
+      type: 'POST',
+      url: '{% url "message-create" pk=survey.id %}?project={{  project.id }} %}',
+      data: {
+        'csrfmiddlewaretoken': '{{ csrf_token }}',
+        'survey_id': '{{ survey.id }}',
+        'body': $( this ).text(),
+        'sound_file': ,
+      },
+      success: function(data) {},
+    });
+  })
+</script>
+<script type="text/javascript">
+  $( 'body' ).on("click", ".Collapser", function() {
+    $( this ).next( '.Collapsible-parent' ).find( '.Collapsible' ).slideToggle();
+  });
+</script>
 {% endblock %}

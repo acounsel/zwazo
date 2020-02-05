@@ -232,6 +232,11 @@ class Survey(models.Model):
         getattr(twiml, verb)(*args, **kwargs)
         return twiml
 
+class Message(models.Model):
+    body = models.CharField(max_length=255)
+    sound_file = models.FileField(storage=PrivateMediaStorage(), upload_to='files/', blank=True, null=True)
+    survey = models.ForeignKey(Survey, on_delete=models.SET_NULL, blank=True, null=True)
+
 class Question(models.Model):
     TEXT = 'text'
     YES_NO = 'yes_no'

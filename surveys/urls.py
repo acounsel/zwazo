@@ -18,6 +18,7 @@ urlpatterns = [
                 path('', views.SurveyPrompts.as_view(), name='survey-prompts'),
                 path('sound/', views.SurveyPromptSound.as_view(), name='survey-prompt-sound'),
             ])),
+            path('add-message/', views.MessageCreate.as_view(), name='message-create'),
             path('questions/', include([
                 path('', views.QuestionList.as_view(), name='question-list'),
                 path('add/', views.QuestionCreate.as_view(), name='question-create'),

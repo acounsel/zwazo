@@ -369,6 +369,17 @@ class SurveyPromptSound(SurveyDetail):
         messages.success(request, 'Prompts successfuly added')
         return self.object
 
+class MessageCreate(View):
+
+    def post(self, request, *args, **kwargs):
+        Message.objects.create(
+            survey=Survey.objects.get(id=request.POST.get('survey_id')), 
+            body=request.POST.get('body'), 
+            sound_file=request.POST.get('sound_file')
+        )
+        return JsonResponse({'data':True})
+
+
 class SurveyResponse(SurveyView, DetailView):
     template_name = 'surveys/survey_results.html'
 
@@ -381,7 +392,7 @@ class SurveyResponse(SurveyView, DetailView):
 class QuestionView(LoginRequiredMixin, View):
     model = Question
     fields = ('body', 'kind', 'sound_file', 'repeater',
-        'terminator', 'has_prompt')
+        'terminator', 'timeout', 'has_prompt')
 
     def get_object(self, queryset=None):
         obj = Question.objects.get(id=self.kwargs['question_pk'])
@@ -412,6 +423,7 @@ class QuestionCreate(QuestionView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['setup_percent'] = 75
+        print(context)
         return context
 
     def get_initial(self):
@@ -505,6 +517,7 @@ class ContactDetail(ContactView, DetailView):
             context['responses'] = QuestionResponse.objects.filter(
                 question__survey=context['survey'],
                 contact=self.object)
+        print(context)
         return context
 
 class ContactCreate(ContactView, CreateView):
@@ -568,7 +581,7 @@ class ContactImport(ProjectDetail):
         except KeyError:
             messages.error(request, 'Please upload a file.')
         else:
-            self.import_csv_data(import_file)
+            self.import_csv_data(import_file, project=self.object)
         return redirect(
             reverse('survey-create')+'?project={}'.format(
                 self.object.id
@@ -576,7 +589,7 @@ class ContactImport(ProjectDetail):
         )
 
 
-    def import_csv_data(self, import_file):
+    def import_csv_data(self, import_file, project):
         errors = []
         try:
             # with open(import_file, 'rt', encoding="utf-8",
@@ -592,13 +605,15 @@ class ContactImport(ProjectDetail):
                 'Failed to read file. Please make sure the file is \
                 in CSV format.')
         else:
-            errors = self.enumerate_rows(reader)
+            errors = self.enumerate_rows(reader, project)
         return errors
 
     # Loop through CSV, skipping header row.
-    def enumerate_rows(self, reader, start=2):
+    def enumerate_rows(self, reader, project, start=2):
         # Index is for row numbers in error message-s.
         for index, contact in enumerate(reader, start=2):
+            contact.update({'project': project})
+            print(contact)
             row_errors = []
             try:
                 self.import_contact_row(contact)
@@ -607,7 +622,7 @@ class ContactImport(ProjectDetail):
         return row_errors
 
     def import_contact_row(self, contact_dict):
-        contact = Contact.objects.create(**contact_dict)
+        contact = Contact.objects.get_or_create(**contact_dict)
         return contact
 
 class ContactRemove(ContactDetail):
@@ -684,6 +699,9 @@ class ResponseActionCreate(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['survey'] = Survey.objects.get(id=self.kwargs.get('pk'))
+        if self.request.GET.get('project'):
+            context['project'] = Project.objects.get(
+                id=self.request.GET.get('project'))
         return context
 
 class SurveyExport(QuestionResponseView, ListView):

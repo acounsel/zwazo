@@ -2,11 +2,11 @@
 
 {% block content %}
 <div class="container">
-  <div class="d-flex flex-column flex-lg-row justify-content-between">
-  <p class="h2 mb-5 text-white">{% if project %}{{ project.name }}{% else %}Surveys{% endif %}</p>
-  {% if project %}
-    {% include 'addins/progress_bar.html' %}
-  {% endif %}
+  <div class="d-flex flex-column flex-lg-row justify-content-between mb-5">
+    <p class="h2 text-white">{% if project %}Project: {{ project.name }}{% else %}Surveys{% endif %}</p>
+    {% if project %}
+      {% include 'addins/progress_bar.html' %}
+    {% endif %}
   </div>
   <div class="card text-center">
     <div class="card-header">
@@ -19,7 +19,7 @@
           <a class="nav-link {% block tab_contacts %}{% endblock %}" href="{% url 'contact-list' %}?project={{ project.id }}">Contacts</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'contact-add' slug=project.slug %}">Add Contact</a>
+          <a class="nav-link" href="{% url 'contact-add' slug=project.slug %}">Add Contacts</a>
         </li>
         {% endif %}
         <li class="nav-item">
