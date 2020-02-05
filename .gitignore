@@ -4,4 +4,4 @@ db.sqlite3
 .DS_Store
 surveys/migrations/*
 !surveys/migrations/__init__.py
-venv
+venv/*

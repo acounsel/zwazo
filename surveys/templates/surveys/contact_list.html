@@ -14,10 +14,10 @@
   <tbody>
     {% for contact in contact_list %}
     <tr>
-      <td>{{ contact.first_name }}</td>
-      <td>{{ contact.last_name }}</td>
-      <td>{{ contact.phone }}</td>
-      <td>{{ contact.email }}</td>
+      <td><a href="{% url 'contact-detail' pk=contact.pk %}">{{ contact.first_name }}</a></td>
+      <td><a href="{% url 'contact-detail' pk=contact.pk %}">{{ contact.last_name }}</a></td>
+      <td><a href="{% url 'contact-detail' pk=contact.pk %}">{{ contact.phone }}</a></td>
+      <td><a href="{% url 'contact-detail' pk=contact.pk %}">{{ contact.email }}</a></td>
     </tr>
     {% endfor %}
   </tbody>
