@@ -18,7 +18,7 @@
       <tbody>
         {% for contact in project.contact_set.all %}
         <tr>
-          <td>{{ contact.first_name }} {{ contact.last_name }}</td> 
+          <td><a href="{% url 'contact-detail' pk=contact.pk %}">{{ contact.first_name }} {{ contact.last_name }}</a></td> 
           <td>{{ contact.phone }}</td>
           <td>{{ contact.email }}</td>
         </tr>
