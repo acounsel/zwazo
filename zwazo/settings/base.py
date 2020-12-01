@@ -2,6 +2,7 @@ import os
 import sys
 
 from django.core.exceptions import ImproperlyConfigured
+from pathlib import Path
 
 def get_env_variable(var_name):
     """Get the environment variable or return exception.""" 
