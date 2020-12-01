@@ -2,7 +2,5 @@
 local_settings.py
 db.sqlite3
 .DS_Store
-surveys/migrations/*
-!surveys/migrations/__init__.py
 data/import_contacts.csv
 venv/*
