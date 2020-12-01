@@ -2,7 +2,7 @@ boto3==1.16.1
 botocore
 certifi==2018.11.29
 chardet==3.0.4
-Django==2.2.10
+Django==2.2.13
 django-crispy-forms==1.7.2
 django-extensions==2.1.5
 django-heroku==0.3.1
